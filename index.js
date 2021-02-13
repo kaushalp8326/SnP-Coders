@@ -11,8 +11,64 @@ app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
 mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', {useNewUrlParser: true, useUnifiedTopology: true});
 
+const userSchema = {
+    email: String,
+    password: String
+};
+
+const User = new mongoose.model('User', userSchema);
+
 app.get('/', (req, res) => {
     res.render('index');
+});
+
+app.get('/register', (req, res) => {
+    res.render('register');
+});
+
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+app.post("/register", (req, res) => {
+    bcrypt.hash(req.body.password, saltRounds, function(err, hash){
+        const newUser = new User({
+            email: req.body.email,
+            password: hash
+        });
+        newUser.save(function(error) {
+            if (error) {
+                console.log(error);
+            }
+            else {
+                res.render('success', {username: req.body.email});
+            }
+        });    
+    });
+});
+
+app.post("/login", (req,res)=> {
+    const email = req.body.email;
+    const password = req.body.password;
+    
+    User.findOne({email: email}, function(err, foundUser){
+        if (err) {
+            console.log(err);
+        } else {
+            if (foundUser) {
+                bcrypt.compare(password, foundUser.password, function(error, result) {
+                    if (error) {
+                        console.log(error);
+                    }
+                    else {
+                        if (result===true) {
+                            res.render('success', {username: foundUser.email});
+                        }
+                    }
+                });
+            }
+        }
+    });
 });
 
 app.listen(port, () => console.log('Node server listening on port 6969!'));

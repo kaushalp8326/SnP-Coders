@@ -3,3 +3,137 @@
     padding: 0;
     box-sizing: border-box;
 }
+
+.bg-dark {
+    background-color: #0e0e0e!important;
+}
+
+.ml-auto {
+    margin-left: auto;
+}
+
+.navbar {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.nav-link {
+    margin-left: 1rem;
+}
+
+.container-fluid {
+    padding: 0 15%;
+}
+
+.container-full {
+    height: 100vh;
+    padding-top: 5%;
+}
+
+.sub-heading {
+    font-size: 1.5rem;
+    padding-top: 2.5%;
+    padding-bottom: 2.5%;
+}
+
+.hero-btn {
+    margin-right: 2.5rem;
+    font-size: 1.5rem;
+    width: 15%;
+    margin-top: 5%;
+    min-width: 9rem;
+}
+
+.hero-half {
+    width: 50%;
+    padding-top: 12.5%;
+    padding-bottom: 12.5%;
+}
+
+.hero-section {
+    display: flex;
+    justify-content: space-between;
+}
+
+.hero-img {
+    margin-top: 5%;
+    height: 60vh;
+}
+
+/*
+*
+* ==========================================
+* CUSTOM UTIL CLASSES
+* ==========================================
+*
+*/
+
+.border-md {
+    border-width: 2px;
+}
+
+.btn-facebook {
+    background: #405D9D;
+    border: none;
+}
+
+.btn-facebook:hover, .btn-facebook:focus {
+    background: #314879;
+}
+
+.btn-twitter {
+    background: #42AEEC;
+    border: none;
+}
+
+.btn-twitter:hover, .btn-twitter:focus {
+    background: #1799e4;
+}
+
+
+
+/*
+*
+* ==========================================
+* FOR DEMO PURPOSES
+* ==========================================
+*
+*/
+
+body {
+    min-height: 100vh;
+}
+
+.form-control:not(select) {
+    padding: 1.5rem 0.5rem;
+}
+
+select.form-control {
+    height: 52px;
+    padding-left: 0.5rem;
+}
+
+.form-control::placeholder {
+    color: #ccc;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+.form-control:focus {
+    box-shadow: none;
+}
+
+
+@media only screen and (max-width: 1140px) {
+    .container-full {
+        text-align: center;
+    }
+    .hero-btn {
+        width: 100%;
+    }
+    .hero-half {
+        width: 100%;
+    }
+    .hero-img {
+        display: none;
+    }
+}
