@@ -31,6 +31,10 @@ app.get('/login', (req, res) => {
     res.render('login');
 });
 
+app.get('/delete', (req, res) => {
+    res.render('delete');
+});
+
 app.post("/register", (req, res) => {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash){
         const newUser = new User({
