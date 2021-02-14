@@ -1,0 +1,16 @@
+<%- include("header") -%>
+<br>
+<br>
+<br>
+<br>
+<h1>Welcome, Admin <%= username %>!</h1>
+
+<form action="/ban" method="POST">
+    <div class="form-group">
+      <label for="email">Delete: Account email</label>
+      <input type="email" name="email" id="email" class="form-control" placeholder="email@example.com">
+    </div>
+    <button type="submit" class="btn btn-block login-btn" >Delete</button>
+  </form>
+
+

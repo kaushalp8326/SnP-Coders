@@ -13,7 +13,8 @@ mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', 
 
 const userSchema = {
     email: String,
-    password: String
+    password: String,
+    isAdmin: Boolean
 };
 
 const User = new mongoose.model('User', userSchema);
@@ -61,14 +62,22 @@ app.post("/login", (req,res)=> {
                         console.log(error);
                     }
                     else {
-                        if (result===true) {
+                        if (result===true && !foundUser.isAdmin) {
                             res.render('success', {username: foundUser.email});
                         }
+                        else if(result===true && foundUser.isAdmin){
+                            res.render('admin',{username: foundUser.email});
+                        }
+                        
                     }
                 });
             }
         }
     });
+});
+
+app.post("/ban", (req,res)=> {
+    console.log(req.body.email);
 });
 
 app.listen(port, () => console.log('Node server listening on port 6969!'));
