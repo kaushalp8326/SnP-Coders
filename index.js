@@ -48,7 +48,7 @@ app.post("/register", (req, res) => {
                 console.log(error);
             }
             else {
-                res.render('success', {username: req.body.username});
+                res.render('success', {username: req.body.email});
             }
         });    
     });
@@ -69,10 +69,10 @@ app.post("/login", (req,res)=> {
                     }
                     else {
                         if (result===true && !foundUser.isAdmin) {
-                            res.render('success', {username: foundUser.username});
+                            res.render('success', {username: foundUser.email});
                         }
                         else if(result===true && foundUser.isAdmin){
-                            res.render('admin',{username: foundUser.username});
+                            res.render('admin',{username: foundUser.email});
                         }
                         
                     }
