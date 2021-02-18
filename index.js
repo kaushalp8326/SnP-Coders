@@ -12,6 +12,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', {useNewUrlParser: true, useUnifiedTopology: true});
 
 const userSchema = {
+    username: String,
     email: String,
     password: String,
     isAdmin: Boolean
@@ -38,6 +39,7 @@ app.get('/delete', (req, res) => {
 app.post("/register", (req, res) => {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash){
         const newUser = new User({
+            username: req.body.username,
             email: req.body.email,
             password: hash
         });
@@ -46,7 +48,7 @@ app.post("/register", (req, res) => {
                 console.log(error);
             }
             else {
-                res.render('success', {username: req.body.email});
+                res.render('success', {username: req.body.username});
             }
         });    
     });
@@ -67,10 +69,10 @@ app.post("/login", (req,res)=> {
                     }
                     else {
                         if (result===true && !foundUser.isAdmin) {
-                            res.render('success', {username: foundUser.email});
+                            res.render('success', {username: foundUser.username});
                         }
                         else if(result===true && foundUser.isAdmin){
-                            res.render('admin',{username: foundUser.email});
+                            res.render('admin',{username: foundUser.username});
                         }
                         
                     }
