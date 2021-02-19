@@ -1,0 +1,16 @@
+<%- include("header") -%>
+<br>
+<br>
+<br>
+<br>
+<h1>Enter your post</h1>
+
+<form action="/makePost" method="POST">
+    <div class="form-group">
+      <input type="text" name="username" id="username" class="form-control" placeholder="Your Username Here">
+      <input type="text" name="postContent" class="form-control" placeholder="Your Post Here">
+    </div>
+    <button type="submit" class="btn btn-block login-btn" >Submit</button>
+  </form>
+
+  <%- include("footer") -%>

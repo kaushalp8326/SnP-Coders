@@ -18,7 +18,18 @@ const userSchema = {
     isAdmin: Boolean
 };
 
+const postSchema = {
+    text: String,
+    author: String,
+    likes: Number,
+    dislikes: Number,
+    master: Boolean,
+    date: Date
+};
+
 const User = new mongoose.model('User', userSchema);
+const Post = new mongoose.model('Post', postSchema);
+
 
 app.get('/', (req, res) => {
     res.render('index');
@@ -36,6 +47,10 @@ app.get('/delete', (req, res) => {
     res.render('delete');
 });
 
+app.get('/makePost', function (req, res) {
+    res.render('makePost');
+  });
+
 app.post("/register", (req, res) => {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash){
         const newUser = new User({
@@ -48,7 +63,7 @@ app.post("/register", (req, res) => {
                 console.log(error);
             }
             else {
-                res.render('success', {username: req.body.email});
+                res.render('userPage', {username: req.body.username});
             }
         });    
     });
@@ -69,7 +84,7 @@ app.post("/login", (req,res)=> {
                     } else {
                         if (result === true) {
                             if (!foundUser.isAdmin) {
-                                res.render('success', {username: foundUser.username});
+                                res.render('userPage', {username: foundUser.username});
                             } else if (foundUser.isAdmin) {
                                 res.render('admin', {username: foundUser.username});
                             }
@@ -87,6 +102,25 @@ app.post("/login", (req,res)=> {
 
 app.post("/ban", (req,res)=> {
     console.log(req.body.email);
+});
+
+app.post("/makePost",(req,res)=> {
+    const newPost = new Post({
+        author: req.body.username,
+        text: req.body.postContent,
+        master: true,
+        likes: 0,
+        dislikes: 0,
+        date: new Date()
+    });
+    newPost.save(function(error) {
+        if (error) {
+            console.log(error);
+        }
+        else {
+            res.render('userPage', {username: req.body.email});
+        }
+    });  
 });
 
 app.listen(port, () => console.log('Node server listening on port 6969!'));
