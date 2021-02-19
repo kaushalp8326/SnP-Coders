@@ -66,17 +66,20 @@ app.post("/login", (req,res)=> {
                 bcrypt.compare(password, foundUser.password, function(error, result) {
                     if (error) {
                         console.log(error);
-                    }
-                    else {
-                        if (result===true && !foundUser.isAdmin) {
-                            res.render('success', {username: foundUser.email});
+                    } else {
+                        if (result === true) {
+                            if (!foundUser.isAdmin) {
+                                res.render('success', {username: foundUser.username});
+                            } else if (foundUser.isAdmin) {
+                                res.render('admin', {username: foundUser.username});
+                            }
+                        } else {
+                            res.render('login', {loginfail: 'Failed login attempt'});
                         }
-                        else if(result===true && foundUser.isAdmin){
-                            res.render('admin',{username: foundUser.email});
-                        }
-                        
                     }
                 });
+            } else {
+                res.render('login', {loginfail: 'Failed login attempt'});
             }
         }
     });

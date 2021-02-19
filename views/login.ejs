@@ -31,6 +31,9 @@
                 <label for="password">Password</label>
                 <input type="password" name="password" id="password" class="form-control" placeholder="enter your passsword">
               </div>
+              <% if(locals.loginfail) { %>
+                <div class="form-group">Incorrect email/password!</div>
+              <% }  %> 
               <button type="submit" class="btn btn-block login-btn" >Login</button>
             </form>
             <a href="#!" class="forgot-password-link">Forgot password?</a>
