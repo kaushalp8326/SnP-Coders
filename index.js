@@ -21,8 +21,8 @@ const userSchema = {
 const postSchema = {
     text: String,
     author: String,
-    likes: Number,
-    dislikes: Number,
+    likes: [String],
+    dislikes: [String],
     master: Boolean,
     date: Date
 };
@@ -109,8 +109,6 @@ app.post("/makePost",(req,res)=> {
         author: req.body.username,
         text: req.body.postContent,
         master: true,
-        likes: 0,
-        dislikes: 0,
         date: new Date()
     });
     newPost.save(function(error) {
@@ -121,6 +119,110 @@ app.post("/makePost",(req,res)=> {
             res.render('userPage', {username: req.body.email});
         }
     });  
+});
+
+app.post('/viewPost', (req, res) => {
+    const user = req.body.user;
+    const postId = req.body.postId; 
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, function(findError, foundPost) {
+        if (findError) {
+            console.log(findError);
+            res.json(findError);
+        }
+        if (foundPost) {
+            res.render('post', {postJSON: foundPost, user: user});
+        }
+    });
+});
+
+app.post("/like", (req, res) => {
+    const user = req.body.user;
+    const postId = req.body.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findError, foundPost) {
+        if (findError) {
+            console.log(findError);
+            res.json(findError);
+        }
+        if (foundPost.dislikes.includes(user)) {
+            foundPost.dislikes.remove(user);
+        }
+        if (!foundPost.likes.includes(user)) {
+            foundPost.likes.push(user);
+        }
+        foundPost.save(function(saveError) {
+            res.redirect('back');
+            if (saveError) {
+                console.log(saveError);
+                res.json(saveError);
+            }
+        });
+    }));
+});
+
+app.post("/unlike", (req, res) => {
+    const user = req.body.user;
+    const postId = req.body.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findError, foundPost) {
+        if (findError) {
+            console.log(findError);
+            res.json(findError);
+        }
+        if (foundPost.likes.includes(user)) {
+            foundPost.likes.remove(user);
+        }
+        foundPost.save(function(saveError) {
+            res.redirect('back');
+            if (saveError) {
+                console.log(saveError);
+                res.json(saveError);
+            }
+        });
+    }));
+});
+
+app.post("/dislike", (req, res) => {
+    const user = req.body.user;
+    const postId = req.body.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findError, foundPost) {
+        if (findError) {
+            console.log(findError);
+            res.json(findError);
+        }
+        if (foundPost.likes.includes(user)) {
+            foundPost.likes.remove(user);
+        }
+        if (!foundPost.dislikes.includes(user)) {
+            foundPost.dislikes.push(user);
+        }
+        foundPost.save(function(saveError) {
+            res.redirect('back');
+            if (saveError) {
+                console.log(saveError);
+                res.json(saveError);
+            }
+        });
+    }));
+});
+
+app.post("/undislike", (req, res) => {
+    const user = req.body.user;
+    const postId = req.body.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findError, foundPost) {
+        if (findError) {
+            console.log(findError);
+            res.json(findError);
+        }
+        if (foundPost.dislikes.includes(user)) {
+            foundPost.dislikes.remove(user);
+        }
+        foundPost.save(function(saveError) {
+            res.redirect('back');
+            if (saveError) {
+                console.log(saveError);
+                res.json(saveError);
+            }
+        });
+    }));
 });
 
 app.listen(port, () => console.log('Node server listening on port 6969!'));
