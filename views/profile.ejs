@@ -1,0 +1,73 @@
+<%- include("homeheader") -%>
+<br>
+<br>
+<br>
+<br>
+<link rel="stylesheet" href="css/profile.css">
+<div class="container">
+    <div class="row">
+        <div class="col" style="text-align: center;">
+            <h1>____'s Profile</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col" style="text-align: center;">
+            <h6>User since: ___</h6>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6" style="text-align: center;">
+            <p>Followers: 9999</p>
+        </div>
+
+        <div class="col-sm-6" style="text-align: center;">
+            <p>Following: 9999</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col" style="text-align: center;">
+            <p id="userBio">Bio: Original bio Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4" style="text-align: center;">
+            <a class="btn btn-light btn-lg hero-btn" onclick="editBio()">Edit Bio</a>
+            <script>
+                function editBio() {
+                    var ogBio = document.getElementById("userBio").innerHTML;
+                    ogBio = ogBio.substring(5);
+                    var newBio = prompt("Edit your bio here:", ogBio);
+                    if(newBio == null){
+                        // cancelled edit
+                        return;
+                    }
+                    newBio = "Bio: " + newBio;
+                    document.getElementById("userBio").innerHTML = newBio;
+                }
+            </script>
+        </div>
+
+        <div class="col-sm-4" style="text-align: center;">
+            <a href="/" class="btn btn-light btn-lg hero-btn">Search Posts</a>
+        </div>  
+
+        <div class="col-sm-4" style="text-align: center;">
+            <a href="/makePost" class="btn btn-light btn-lg hero-btn">Make Post</a>
+        </div>        
+    </div>
+
+    <div class="row">
+        <div class="col" style="text-align: left;">
+            <p>Post 1</p>
+            <p>Post 2</p>
+            <p>Post 3</p>
+            <p>Post 4</p>
+            <p>Post 5</p>
+        </div>
+    </div>
+</div>
+<%- include("footer") -%>

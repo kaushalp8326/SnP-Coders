@@ -49,7 +49,11 @@ app.get('/delete', (req, res) => {
 
 app.get('/makePost', function (req, res) {
     res.render('makePost');
-  });
+});
+
+app.get('/profile', function (req, res) {
+    res.render('profile');
+});
 
 app.post("/register", (req, res) => {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash){
