@@ -24,10 +24,10 @@
     <% } else { %>
       <li class="post-item"><%= karma %></li>
     <% } %>
-    <% if (postJSON.likes.includes(user)) { %>
+    <% if (postJSON.likes.includes(postUser)) { %>
       <li class="post-item">
         <form action="/unlike" method="POST">
-          <input type="hidden" name="user" value="<%= user %>">
+          <input type="hidden" name="user" value="<%= postUser %>">
           <input type="hidden" name="postId" value="<%= postJSON._id %>">
           <input type="image" alt="Submit" src="img/liked.svg" width="25" height="25"/>
         </form>
@@ -35,16 +35,16 @@
     <% } else { %>
       <li class="post-item">
         <form action="/like" method="POST">
-          <input type="hidden" name="user" value="<%= user %>">
+          <input type="hidden" name="user" value="<%= postUser %>">
           <input type="hidden" name="postId" value="<%= postJSON._id %>">
           <input type="image" alt="Submit" src="img/like.svg" width="25" height="25"/>
         </form>
       </li>
     <% } %>
-    <% if (postJSON.dislikes.includes(user)) { %>
+    <% if (postJSON.dislikes.includes(postUser)) { %>
       <li class="post-item">
         <form action="/undislike" method="POST">
-          <input type="hidden" name="user" value="<%= user %>">
+          <input type="hidden" name="user" value="<%= postUser %>">
           <input type="hidden" name="postId" value="<%= postJSON._id %>">
           <input type="image" alt="Submit" src="img/disliked.svg" width="25" height="25"/>
         </form>
@@ -52,7 +52,7 @@
     <% } else { %>
       <li class="post-item">
         <form action="/dislike" method="POST">
-          <input type="hidden" name="user" value="<%= user %>">
+          <input type="hidden" name="user" value="<%= postUser %>">
           <input type="hidden" name="postId" value="<%= postJSON._id %>">
           <input type="image" alt="Submit" src="img/dislike.svg" width="25" height="25"/>
         </form>
@@ -64,6 +64,7 @@
       </form>
     </li>
   </ul>
+  <div class="post-date"><%= postJSON.date.toDateString() %></div>
 </div>
 </main>
 </body>
