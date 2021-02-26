@@ -1,19 +1,60 @@
 <%- include("homeheader") -%>
-<br>
-<br>
-<br>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S&P Coders</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-<main>
-    <%- include('timeline', {timelineJSON: popularJSON, timelineUser: popularUser}) %>
-</main>
-</body>
+<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
+	<div class="container">
+		<div class="row">
+			<div class="title col-12 align-center">
+				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">POPULAR POSTS</h3>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Explore the hottest Posts</h2>
+			</div>
+            <% for (var i = 0; i < posts.length; i++) { %>        
+                <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
+                    <div class="card-inner">
+                        <div class="card-img align-left">
+                            <% karma = posts[i].likes.length - posts[i].dislikes.length %>
+                            <% if (Math.abs(karma) > 9999 && Math.abs(karma) < 1000000) { %>
+                                <% karma = (karma / 1000).toFixed(1)%>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %>k</span>
+                            <% } else if (Math.abs(karma) > 1000000){ %>
+                                <% karma = (karma / 1000000).toFixed(2)%>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %>m</span>
+                            <% } else { %>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %></span>
+                            <% } %>
+                            <% if (posts[i].likes.includes(user.username)) { %>
+                                <a href="/unlike/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
+                            <% } else { %>
+                                <a href="/like/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } %>
+                            <% if (posts[i].dislikes.includes(user.username)) { %>
+                                <a href="/undislike/postId/<%= posts[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
+                            <% } else { %>
+                                <a href="/dislike/postId/<%= posts[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } %>
+                            <span class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;"></span>
+                        </div>
+                        <div class="card-box">
+                            
+                            <p class="mbr-text align-left mbr-fonts-style display-7">
+                                <%= posts[i].text %>
+                            </p>
+                            <div class="card-people">
+                                <div class="user_image">
+                                    <img src="assets/images/mbr-455x455.png" alt="">
+                                </div>
+                                <div class="wrapper-name">
+                                    <a href="/profile/<%= posts[i].author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
+                                        <%= posts[i].author %>
+                                    </a>
+                                    <div class="mbr-author-desc mbr-fonts-style display-4">
+                                        <%= posts[i].date.toDateString() %></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+		</div>
+	</div>
+</section>
+
+<%- include("footer") -%>

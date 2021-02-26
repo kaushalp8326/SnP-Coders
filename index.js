@@ -51,11 +51,22 @@ app.get('/', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-    res.render('register');
+    res.render('register', {registerFail: []});
 });
 
 app.get('/login', (req, res) => {
-    res.render('login');
+    if (req.session.user) {
+        Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+            if (findPostError) {
+                console.log(findPostError);
+            } else {
+                res.render('userPage', {user: req.session.user, posts: foundPosts});
+            }
+        });
+    }
+    else {
+        res.render('login');
+    }
 });
 
 app.get('/delete', (req, res) => {
@@ -63,23 +74,40 @@ app.get('/delete', (req, res) => {
 });
 
 app.get('/profile', function (req, res) {
-    User.findOne({username: req.session.user.username}, function(findUserError, foundUser) {
-        if (findUserError) {
-            console.log(findUserError);
+    Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+        if (findPostError) {
+            console.log(findPostError);
         } else {
-            Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-                if (findPostError) {
-                    console.log(findPostError);
-                } else {
-                    res.render('profile', {userJSON: foundUser, requestsJSON: foundPosts});
-                }
-            });
+            res.render('userPage', {user: req.session.user, posts: foundPosts});
         }
     });
 });
 
+app.get('/profile/:profile', (req, res) => {
+    const username = req.params.profile;
+    if (req.params.profile == req.session.user.username) {
+        res.redirect('/profile');
+    } else {
+        User.findOne({username: username}, function(error, foundUser) {
+            if (error) {
+                console.log(error);
+            } else {
+                Post.find({author: username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                    if (findPostError) {
+                        console.log(findPostError);
+                    } else {
+                        if (foundUser) {
+                            res.render('profile', {user: foundUser, posts: foundPosts, local: req.session.user});    
+                        }
+                    }
+                });
+            }
+        });
+    }
+});
+
 app.get('/makePost', function (req, res) {
-    res.render('makePost', {username: req.session.user.username});
+    res.redirect("login");
 });
 
 app.get('/popular', (req, res) => {
@@ -87,32 +115,257 @@ app.get('/popular', (req, res) => {
         if (findPostError) {
             console.log(findPostError);
         } else {
-            res.render('popular', {popularJSON: foundPosts, popularUser: req.session.user.username});
+            res.render('popular', {user: req.session.user, posts: foundPosts});
         }
     });
 });
 
+app.get('/logout', (req, res) => {
+    req.session.reset();
+    res.redirect('/login');
+});
 
-app.post("/register", (req, res) => {
-    bcrypt.hash(req.body.password, saltRounds, function(hashError, hash){
-        if (hashError) {
-            console.log(hashError);
+
+app.get("/like/postId/:postId", (req, res) => {
+    const user = req.session.user.username;
+    const postId = req.params.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+        if (findPostError) {
+            console.log(findPostError);
         } else {
-            const newUser = new User({
-                username: req.body.username,
-                email: req.body.email,
-                password: hash,
-                joined: new Date()
-            });
-            newUser.save(function(saveError) {
+            if (foundPost.dislikes.includes(user)) {
+                foundPost.dislikes.remove(user);
+            }
+            if (!foundPost.likes.includes(user)) {
+                foundPost.likes.push(user);
+            }
+            foundPost.save(function(saveError) {
                 if (saveError) {
                     console.log(saveError);
                 } else {
-                    req.session.user = newUser;
-                    res.render('userPage', {username: req.body.username});
+                    res.redirect('back');
                 }
             });
-        } 
+        }
+    }));
+});
+
+app.get("/unlike/postId/:postId", (req, res) => {
+    const user = req.session.user.username;
+    const postId = req.params.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            if (foundPost.likes.includes(user)) {
+                foundPost.likes.remove(user);
+            }
+            foundPost.save(function(saveError) {
+                if (saveError) {
+                    console.log(saveError);
+                } else {
+                    res.redirect('back');
+                }
+            });
+        }
+    }));
+});
+
+app.get("/dislike/postId/:postId", (req, res) => {
+    const user = req.session.user.username;
+    const postId = req.params.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            if (foundPost.likes.includes(user)) {
+                foundPost.likes.remove(user);
+            }
+            if (!foundPost.dislikes.includes(user)) {
+                foundPost.dislikes.push(user);
+            }
+            foundPost.save(function(saveError) {
+                if (saveError) {
+                    console.log(saveError);
+                } else {
+                    res.redirect('back');
+                }
+            });
+        }
+    }));
+});
+
+app.get("/undislike/postId/:postId", (req, res) => {
+    const user = req.session.user.username;
+    const postId = req.params.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            if (foundPost.dislikes.includes(user)) {
+                foundPost.dislikes.remove(user);
+            }
+            foundPost.save(function(saveError) {
+                if (saveError) {
+                    console.log(saveError);
+                } else {
+                    res.redirect('back');
+                }
+            });
+        }
+    }));
+});
+
+app.get("/follow/username/:username", (req, res) => {
+    const username = req.params.username;
+    User.findOne({username: username}, function(error, foundUser) {
+        if (!foundUser.followers.includes(req.session.user.username)) {
+            foundUser.followers.push(req.session.user.username);
+        }
+        User.findOne({username: req.session.user.username}, function(err, foundClient) {
+            if (err) {
+                console.log(err);
+            }
+            else {
+                if (foundClient) {
+                    if (!foundClient.following.includes(foundUser.username)) {
+                        foundClient.following.push(foundUser.username);
+                        foundClient.save(function (saveError) {
+                            if (saveError) {
+                                console.log(saveError);
+                            } else {
+                                foundUser.save(function (saveErr) {
+                                    if (saveErr) {
+                                        console.log(saveErr);
+                                    } else {
+                                        req.session.user = foundClient;
+                                        res.redirect('back');
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+        });
+        
+    });
+});
+
+app.get("/unfollow/username/:username", (req, res) => {
+    const username = req.params.username;
+    User.findOne({username: username}, function(error, foundUser) {
+        if (foundUser.followers.includes(req.session.user.username)) {
+            foundUser.followers.remove(req.session.user.username);
+        }
+        User.findOne({username: req.session.user.username}, function(err, foundClient) {
+            if (err) {
+                console.log(err);
+            }
+            else {
+                if (foundClient) {
+                    if (foundClient.following.includes(foundUser.username)) {
+                        foundClient.following.remove(foundUser.username);
+                        foundClient.save(function (saveError) {
+                            if (saveError) {
+                                console.log(saveError);
+                            } else {
+                                foundUser.save(function (saveErr) {
+                                    if (saveErr) {
+                                        console.log(saveErr);
+                                    } else {
+                                        req.session.user = foundClient;
+                                        res.redirect('back');
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    });
+});
+
+app.get("/delete/postId/:postId", (req, res) => {
+    const postId = req.params.postId;
+    Post.deleteOne({_id: mongoose.Types.ObjectId(postId)}, (function(deletePostError) {
+        if (deletePostError) {
+            console.log(deletePostError);
+        } else {
+            res.redirect('back');
+        }
+    }));
+});
+
+app.get("/explore", (req, res) => {
+    User.find({}).exec(function(findPostError, foundUsers) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            res.render('explore', {users: foundUsers});
+        }
+    });
+});
+
+app.post("/register", (req, res) => {
+    let validEmail = true;
+    let validUsername = true;
+    let registerFail = [];
+
+    User.findOne({email: req.body.email}, function(error, foundEmail) {
+        if (error) {
+            console.log(error);
+        } else {
+            if (foundEmail) {
+                validEmail = false;
+            }
+            User.findOne({username: req.body.username}, function(erro, foundUser) {
+                if (erro) {
+                    console.log(erro);
+                } else {
+                    if (foundUser) {
+                        validUsername = false;
+                    }
+                    if (validEmail && validUsername) {
+                        bcrypt.hash(req.body.password, saltRounds, function(hashError, hash){
+                            if (hashError) {
+                                console.log(hashError);
+                            } else {
+                                const newUser = new User({
+                                    username: req.body.username,
+                                    email: req.body.email,
+                                    password: hash,
+                                    joined: new Date()
+                                });
+                                newUser.save(function(saveError) {
+                                    if (saveError) {
+                                        console.log(saveError);
+                                    } else {
+                                        req.session.user = newUser;
+                                        Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                                            if (findPostError) {
+                                                console.log(findPostError);
+                                            } else {
+                                                res.render('userPage', {user: req.session.user, posts: foundPosts});
+                                            }
+                                        });
+                                    }
+                                });
+                            } 
+                        });
+                    } else {
+                        if (!validEmail) {
+                            registerFail.push("Email is already taken.");
+                        }
+                        if (!validUsername) {
+                            registerFail.push("Username is already taken.");
+                        }
+                        res.render("register", {registerFail: registerFail});
+                    }
+                }
+            });
+        }
     });
 });
 
@@ -132,7 +385,13 @@ app.post("/login", (req,res)=> {
                         if (result === true) {
                             if (!foundUser.isAdmin) {
                                 req.session.user = foundUser;
-                                res.render('userPage', {username: foundUser.username});
+                                Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                                    if (findPostError) {
+                                        console.log(findPostError);
+                                    } else {
+                                        res.render('userPage', {user: req.session.user, posts: foundPosts});
+                                    }
+                                });
                             } else if (foundUser.isAdmin) {
                                 req.session.user = foundUser;
                                 res.render('admin', {username: foundUser.username});
@@ -164,7 +423,13 @@ app.post("/makePost",(req,res)=> {
         if (saveError) {
             console.log(saveError);
         } else {
-            res.render('userPage', {username: req.body.email});
+            Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                if (findPostError) {
+                    console.log(findPostError);
+                } else {
+                    res.render('userPage', {user: req.session.user, posts: foundPosts});
+                }
+            });
         }
     });  
 });
@@ -182,96 +447,5 @@ app.post('/viewPost', (req, res) => {
         }  
     });
 });
-
-app.post("/like", (req, res) => {
-    const user = req.body.user;
-    const postId = req.body.postId;
-    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
-        if (findPostError) {
-            console.log(findPostError);
-        } else {
-            if (foundPost.dislikes.includes(user)) {
-                foundPost.dislikes.remove(user);
-            }
-            if (!foundPost.likes.includes(user)) {
-                foundPost.likes.push(user);
-            }
-            foundPost.save(function(saveError) {
-                if (saveError) {
-                    console.log(saveError);
-                } else {
-                    res.redirect('back');
-                }
-            });
-        }
-    }));
-});
-
-app.post("/unlike", (req, res) => {
-    const user = req.body.user;
-    const postId = req.body.postId;
-    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
-        if (findPostError) {
-            console.log(findPostError);
-        } else {
-            if (foundPost.likes.includes(user)) {
-                foundPost.likes.remove(user);
-            }
-            foundPost.save(function(saveError) {
-                if (saveError) {
-                    console.log(saveError);
-                } else {
-                    res.redirect('back');
-                }
-            });
-        }
-    }));
-});
-
-app.post("/dislike", (req, res) => {
-    const user = req.body.user;
-    const postId = req.body.postId;
-    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
-        if (findPostError) {
-            console.log(findPostError);
-        } else {
-            if (foundPost.likes.includes(user)) {
-                foundPost.likes.remove(user);
-            }
-            if (!foundPost.dislikes.includes(user)) {
-                foundPost.dislikes.push(user);
-            }
-            foundPost.save(function(saveError) {
-                if (saveError) {
-                    console.log(saveError);
-                } else {
-                    res.redirect('back');
-                }
-            });
-        }
-    }));
-});
-
-app.post("/undislike", (req, res) => {
-    const user = req.body.user;
-    const postId = req.body.postId;
-    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
-        if (findPostError) {
-            console.log(findPostError);
-        } else {
-            if (foundPost.dislikes.includes(user)) {
-                foundPost.dislikes.remove(user);
-            }
-            foundPost.save(function(saveError) {
-                if (saveError) {
-                    console.log(saveError);
-                } else {
-                    res.redirect('back');
-                }
-            });
-        }
-    }));
-});
-
 
 app.listen(port, () => console.log('Node server listening on port 6969!'));

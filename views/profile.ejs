@@ -1,74 +1,117 @@
 <%- include("homeheader") -%>
-<br>
-<br>
-<br>
-<br>
-<link rel="stylesheet" href="css/profile.css">
-<div class="container">
-    <div class="row">
-        <div class="col" style="text-align: center;">
-            <h1><%= userJSON.username %>'s Profile</h1>
+<section class="content5 studiom4_content5 cid-sq4X6Ihgnd" id="content5-i">
+
+    
+
+    <div class="mbr-overlay" style="opacity: 0.6; background-color: rgb(0, 0, 0);"></div>
+
+    <div class="container align-center">
+        <div class="row justify-content-md-center">
+            <div class="mbr-white col-md-12 col-lg-12">
+                <h1 class="mbr-section-title mbr-semibold pb-3 mbr-fonts-style align-center display-2"><%= user.username %>'s Profile</h1>
+                
+                <p class="mbr-text mbr-fonts-style align-center display-5"><%= user.bio %><br></p>
+                <% if (local.following.includes(user.username)) { %>
+                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/unfollow/username/<%= user.username %>" onmouseout="this.innerText='Following'" onmouseover="this.innerText='Unfollow'">Following</a></div>
+                <% } else { %>
+                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/follow/username/<%= user.username %>">Follow</a></div>
+                <% } %>
+            </div>
         </div>
     </div>
+    
+</section>
 
-    <div class="row">
-        <div class="col" style="text-align: center;">
-            <h6>User since: <%= userJSON.joined.toDateString() %></h6>
-        </div>
-    </div>
+<section class="content3 studiom4_content3 cid-sq4WPh8P6U" id="content3-h">
 
-    <div class="row">
-        <div class="col-sm-6" style="text-align: center;">
-            <p>Followers: <%= userJSON.followers.length %></p>
-        </div>
+	
 
-        <div class="col-sm-6" style="text-align: center;">
-            <p>Following: <%= userJSON.following.length %></p>
-        </div>
-    </div>
+	
+	<div class="container">
+		<div class="row">
+			<div class="card col-12 col-md-6">
+				<div class="card-box">
+					<a href="/followers/<%= user.username %>" class="text-white mbr-bold">
+						<h4 class="card-title align-center mbr-fonts-style display-5">Followers&nbsp;<br>
+							<span class="mbr-regular">
+								<%= user.followers.length %>
+							</span>
+						</h4>
+					</a>
+				</div>
+			</div>
+			<div class="card col-12 col-md-6">
+				<div class="card-box">
+					<a href="/following/<%= user.username %>" class="text-white mbr-bold">
+						<h4 class="card-title align-center mbr-fonts-style display-5">Following&nbsp;<br>
+							<span class="mbr-regular">
+								<%= user.following.length %>
+                            </span>
+						</h4>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
 
-    <div class="row">
-        <div class="col" style="text-align: center;">
-            <p id="userBio">Bio: <%= userJSON.bio %></p>
-        </div>
-    </div>
+<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
 
-    <div class="row">
-        <div class="col-sm-4" style="text-align: center;">
-            <a class="btn btn-light btn-lg hero-btn" onclick="editBio()">Edit Bio</a>
-            <script>
-                function editBio() {
-                    var ogBio = document.getElementById("userBio").innerHTML;
-                    ogBio = ogBio.substring(5);
-                    var newBio = prompt("Edit your bio here:", ogBio);
-                    if(newBio == null){
-                        // cancelled edit
-                        return;
-                    }
-                    newBio = "Bio: " + newBio;
-                    document.getElementById("userBio").innerHTML = newBio;
-                }
-            </script>
-        </div>
+	<div class="container">
+		<div class="row">
+			<div class="title col-12 align-center">
+				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">TIMELINE</h3>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Get To Know Me</h2>
+			</div>
+            <% for (var i = 0; i < posts.length; i++) { %>        
+                <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
+                    <div class="card-inner">
+                        <div class="card-img align-left">
+                            <% karma = posts[i].likes.length - posts[i].dislikes.length %>
+                            <% if (Math.abs(karma) > 9999 && Math.abs(karma) < 1000000) { %>
+                                <% karma = (karma / 1000).toFixed(1)%>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %>k</span>
+                            <% } else if (Math.abs(karma) > 1000000){ %>
+                                <% karma = (karma / 1000000).toFixed(2)%>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %>m</span>
+                            <% } else { %>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %></span>
+                            <% } %>
+                            <% if (posts[i].likes.includes(local.username)) { %>
+                                <a href="/unlike/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
+                            <% } else { %>
+                                <a href="/like/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } %>
+                            <% if (posts[i].dislikes.includes(local.username)) { %>
+                                <a href="/undislike/postId/<%= posts[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
+                            <% } else { %>
+                                <a href="/dislike/postId/<%= posts[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } %>
+                            <span class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;"></span>    
+                        </div>
+                        <div class="card-box">
+                            
+                            <p class="mbr-text align-left mbr-fonts-style display-7">
+                                <%= posts[i].text %>
+                            </p>
+                            <div class="card-people">
+                                <div class="user_image">
+                                    <img src="/assets/images/mbr-455x455.png" alt="">
+                                </div>
+                                <div class="wrapper-name">
+                                    <a href="/profile/<%= posts[i].author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
+                                        <%= posts[i].author %>
+                                    </a>
+                                    <div class="mbr-author-desc mbr-fonts-style display-4">
+                                        <%= posts[i].date.toDateString() %></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+		</div>
+	</div>
+</section>
 
-        <div class="col-sm-4" style="text-align: center;">
-            <a href="/" class="btn btn-light btn-lg hero-btn">Search Posts</a>
-        </div>  
-
-        <div class="col-sm-4" style="text-align: center;">
-            <a href="/makePost" class="btn btn-light btn-lg hero-btn">Make Post</a>
-        </div>        
-    </div>
-
-    <div class="row">
-        <div class="col" style="text-align: left;">
-            <%- include('timeline', {timelineJSON: requestsJSON, timelineUser: userJSON.username}) %>
-            <p>Post 1</p>
-            <p>Post 2</p>
-            <p>Post 3</p>
-            <p>Post 4</p>
-            <p>Post 5</p>
-        </div>
-    </div>
-</div>
 <%- include("footer") -%>

@@ -1,53 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>S&P Coders</title>
-  <link href="https://fonts.googleapis.com/css?family=Karla:400,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/4.8.95/css/materialdesignicons.min.css">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/login.css">
-</head>
-<body>
-  <main>
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-6 login-section-wrapper">
-          <div class="brand-wrapper">
-            <a href="/">
-                <img src="img/logo.svg" alt="logo" class="logo">
-            </a>
-          </div>
-          <div class="login-wrapper my-auto">
-            <h1 class="login-title">Login</h1>
-            <form action="/login" method="POST">
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" class="form-control" placeholder="email@example.com">
-              </div>
-              <div class="form-group mb-4">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" class="form-control" placeholder="enter your passsword">
-              </div>
-              <% if(locals.loginfail) { %>
-                <div class="form-group">Incorrect email/password!</div>
-              <% }  %> 
-              <button type="submit" class="btn btn-block login-btn" >Login</button>
-            </form>
-            <a href="#!" class="forgot-password-link">Forgot password?</a>
-            <p class="login-wrapper-footer-text">Don't have an account? <a href="/register" class="text-reset">Register here</a></p>
-          </div>
+<%- include("header") -%>
+<section class="form header3 studiom4_header3 cid-sq4U0K3UrV" style="min-height: 91vh;" id="header3-a">
+
+    
+
+    <div class="mbr-overlay"></div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-lg-7 m-auto">
+                <div class="title">
+                    <h2 class="mbr-section-title mbr-regular align-left mbr-fonts-style mbr-white display-2">We Help you meet people<br>who share your Interests</h2>
+                    <p class="mbr-section-subtitle align-left mbr-fonts-style mbr-white block-left display-7">Don't already have an account? Sign up now to start meeting people who are just <br>as passionate about your hobbies as you are!</p>
+                    <div class="mbr-section-btn align-left"><a class="btn btn-danger display-7" href="/register">Create Your Account Here</a></div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 my-auto pb-4 mbr-form" data-form-type="formoid">
+                <form action="/login" method="POST" class="mbr-form form-with-styler" data-form-title="Form Name">
+                    <div class="form-row">
+                        <% if(locals.loginFail) { %>
+                            <div data-form-alert-danger="" class="alert alert-danger col-12">Incorrect email/password!</div>
+                        <% } %>
+                    </div>
+                    <div class="dragArea form-row">
+                        <div class="col-lg-12 align-center">
+                            <h5 class="mbr-fonts-style mbr-black display-5">Login Now</h5>
+                            <p class="mbr-section-subtitle mbr-section-subtitle align-center mbr-fonts-style text-form display-7">Lorem ipsum dolor sit
+                                amet, consectetur adipiscing elit. Donec dui enim, pharetra</p>
+                        </div>
+                        <div class="col-lg-12 form-group" data-for="Email">
+                            <input type="email" name="email" placeholder="Email" data-form-field="Email" required="required" class="form-control display-7" id="email">
+                        </div>
+                        <div data-for="Password" class="col-lg-12 form-group">
+                            <input type="password" name="password" placeholder="Password" data-form-field="Password" class="form-control display-7" required="required" id="password">
+                        </div>
+                        
+                        <div class="col-auto form-btn"><button type="submit" class="btn btn-danger link-btn display-7">LOGIN</button></div>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="col-sm-6 px-0 d-none d-sm-block">
-          <img src="img/login.jpg" alt="login image" class="login-img">
-        </div>
-      </div>
     </div>
-  </main>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-</body>
-</html>
+</section>
+
+<%- include("footer") -%>
