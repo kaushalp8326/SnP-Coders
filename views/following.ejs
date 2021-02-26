@@ -1,0 +1,25 @@
+<%- include("homeheader") -%>
+<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
+	<div class="container">
+		<div class="row">
+			<div class="title col-12 align-center">
+				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">Followers</h3>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Here are all the users <%= user.username %> follows</h2>
+			</div>
+            <!% console.log(user.username) %>
+            <!% console.log(user.followers) %>
+            <!% console.log(user.followers.length) %>
+            <% for (var i = 0; i < user.following.length; i++) { %>
+                
+                <div class="row">
+                    <p>
+                        <%= user.following[i] %>
+                    </p>
+                </div>
+
+            <% } %>
+		</div>
+	</div>
+</section>
+
+<%- include("footer") -%>

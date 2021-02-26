@@ -106,6 +106,28 @@ app.get('/profile/:profile', (req, res) => {
     }
 });
 
+app.get('/followers/:username', (req, res) => {
+    const username = req.params.username;
+    User.findOne({username: username}, function(error, foundUser) {
+        if (error) {
+            console.log(error);
+        } else {
+            res.render('followers', {user: foundUser, local: req.session.user});
+        }
+    });
+});
+
+app.get('/following/:username', (req, res) => {
+    const username = req.params.username;
+    User.findOne({username: username}, function(error, foundUser) {
+        if (error) {
+            console.log(error);
+        } else {
+            res.render('following', {user: foundUser, local: req.session.user});
+        }
+    });
+});
+
 app.get('/makePost', function (req, res) {
     res.redirect("login");
 });
