@@ -1,22 +1,28 @@
 <%- include("homeheader") -%>
-<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
+<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" style="min-height: 91vh;" id="testimonials2-j">
 	<div class="container">
 		<div class="row">
 			<div class="title col-12 align-center">
-				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">Followers</h3>
-				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Here are all the users who follow <%= user.username %></h2>
+				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">FOLLOWERS</h3>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Here are all the Users that follow <%= user.username %></h2>
 			</div>
-            <!% console.log(user.username) %>
-            <!% console.log(user.followers) %>
-            <!% console.log(user.followers.length) %>
-            <% for (var i = 0; i < user.followers.length; i++) { %>
-                
-                <div class="row">
-                    <p>
-                        <%= user.followers[i] %>
-                    </p>
+            <% for (var i = 0; i < user.followers.length; i++) { %>        
+                <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
+                    <div class="card-inner">
+                        <div class="card-box">
+                            <div class="card-people">
+                                <div class="user_image">
+                                    <img src="/assets/images/mbr-455x455.png" alt="">
+                                </div>
+                                <div class="wrapper-name">
+                                    <a href="/profile/<%= user.followers[i] %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
+                                        <%= user.followers[i] %>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
             <% } %>
 		</div>
 	</div>

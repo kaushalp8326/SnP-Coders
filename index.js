@@ -54,6 +54,10 @@ app.get('/register', (req, res) => {
     res.render('register', {registerFail: []});
 });
 
+app.get('/editBio', (req, res) => {
+    res.render('editBio', {user: req.session.user});
+});
+
 app.get('/login', (req, res) => {
     if (req.session.user) {
         Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
@@ -112,7 +116,7 @@ app.get('/followers/:username', (req, res) => {
         if (error) {
             console.log(error);
         } else {
-            res.render('followers', {user: foundUser, local: req.session.user});
+            res.render('followers', {user: foundUser});
         }
     });
 });
@@ -123,7 +127,7 @@ app.get('/following/:username', (req, res) => {
         if (error) {
             console.log(error);
         } else {
-            res.render('following', {user: foundUser, local: req.session.user});
+            res.render('following', {user: foundUser});
         }
     });
 });
@@ -405,19 +409,14 @@ app.post("/login", (req,res)=> {
                         console.log(compareError);
                     } else {
                         if (result === true) {
-                            if (!foundUser.isAdmin) {
-                                req.session.user = foundUser;
-                                Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-                                    if (findPostError) {
-                                        console.log(findPostError);
-                                    } else {
-                                        res.render('userPage', {user: req.session.user, posts: foundPosts});
-                                    }
-                                });
-                            } else if (foundUser.isAdmin) {
-                                req.session.user = foundUser;
-                                res.render('admin', {username: foundUser.username});
-                            }
+                            req.session.user = foundUser;
+                            Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                                if (findPostError) {
+                                    console.log(findPostError);
+                                } else {
+                                    res.render('userPage', {user: req.session.user, posts: foundPosts});
+                                }
+                            });
                         } else {
                             res.render('login', {loginfail: 'Failed login attempt'});
                         }
@@ -455,6 +454,22 @@ app.post("/makePost",(req,res)=> {
         }
     });  
 });
+
+app.post("/editBio", (req, res) => {
+    console.log(req.body.bio);
+    User.findByIdAndUpdate(req.session.user._id, {bio: req.body.bio}, {new: true}, function (error, updatedUser) {
+        if (error) {
+            console.log(error);
+        }
+        else {
+            if (updatedUser) {
+                req.session.user = updatedUser;
+                console.log(updatedUser);
+                res.redirect("/profile");
+            }
+        }
+    });
+})
 
 app.post('/viewPost', (req, res) => {
     const user = req.body.user;

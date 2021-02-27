@@ -12,9 +12,9 @@
                 
                 <p class="mbr-text mbr-fonts-style align-center display-5"><%= user.bio %><br></p>
                 <% if (local.following.includes(user.username)) { %>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/unfollow/username/<%= user.username %>" onmouseout="this.innerText='Following'" onmouseover="this.innerText='Unfollow'">Following</a></div>
+                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/unfollow/username/<%= user.username %>" onmouseout="this.innerText='Following'" onmouseover="this.innerText='Unfollow'">Following</a></div>
                 <% } else { %>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/follow/username/<%= user.username %>">Follow</a></div>
+                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/follow/username/<%= user.username %>">Follow</a></div>
                 <% } %>
             </div>
         </div>
