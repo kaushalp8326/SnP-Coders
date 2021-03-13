@@ -9,9 +9,18 @@
         <div class="row justify-content-md-center">
             <div class="mbr-white col-md-12 col-lg-12">
                 <h1 class="mbr-section-title mbr-semibold pb-3 mbr-fonts-style align-center display-2"><%= user.username %>'s Profile</h1>
-                
+
                 <p class="mbr-text mbr-fonts-style align-center display-5"><%= user.bio %><br></p>
+                
+                <h1 class="mbr-section-title mbr-semibold pb-3 mbr-fonts-style align-center display-2"><%= user.username %>'s Interests<br></h1>
+                <ul>
+                <% for(var i = 0; i< user.interests.length; i++){ %>
+                    <li>  <%= user.interests[i] %>  </li>
+                <% } %>
+                </ul>
                 <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editBio" style="margin-right: 0;">Edit Bio</a></div>
+                <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editInterests" style="margin-right: 0;">Edit Interests</a></div>
+
             </div>
         </div>
     </div>

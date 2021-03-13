@@ -58,6 +58,10 @@ app.get('/editBio', (req, res) => {
     res.render('editBio', {user: req.session.user});
 });
 
+app.get('/editInterests', (req, res) => {
+    res.render('editInterests', {user: req.session.user});
+});
+
 app.get('/login', (req, res) => {
     if (req.session.user) {
         Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
@@ -313,6 +317,29 @@ app.get("/unfollow/username/:username", (req, res) => {
     });
 });
 
+app.get("/delete/userint/:interest", (req, res) => {
+    const uint = req.params.interest;
+    User.findOne({username: req.session.user.username}, (function(error, foundUser) {
+        if (error) {
+            console.log(error);
+        } else {
+            if(foundUser){
+                console.log(foundUser.interests);
+                foundUser.interests.remove(uint);
+                foundUser.save(function (saveError){
+                    if(saveError){
+                        console.log(saveError);
+                    }
+                    else{
+                        req.session.user = foundUser;
+                        res.redirect('back');
+                    }
+                });
+            }   
+        }
+    }));
+});
+
 app.get("/delete/postId/:postId", (req, res) => {
     const postId = req.params.postId;
     Post.deleteOne({_id: mongoose.Types.ObjectId(postId)}, (function(deletePostError) {
@@ -470,6 +497,33 @@ app.post("/editBio", (req, res) => {
         }
     });
 })
+
+app.post("/addInterest", (req,res) => {
+    if(req.body.newInt.length>0){
+        User.findOne({username: req.session.user.username}, function(err, foundClient) {
+            if (err) {
+                console.log(err);
+            }
+            else {
+                if (foundClient) {
+                    if (!foundClient.interests.includes(req.body.newInt)){
+                        foundClient.interests.push(req.body.newInt);
+                    }
+                    foundClient.save(function (saveError){
+                        if (saveError){
+                            console.log(saveError);
+                        }
+                        else{
+                            req.session.user = foundClient;
+                            res.redirect('back');
+                        }
+                    });
+                }
+            }
+        });
+}
+
+});
 
 app.post('/viewPost', (req, res) => {
     const user = req.body.user;
