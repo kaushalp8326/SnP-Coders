@@ -1,75 +1,10 @@
 <%- include("homeheader") -%>
-<section class="content5 studiom4_content5 cid-sq4X6Ihgnd" id="content5-i">
-
-    
-
-    <div class="mbr-overlay" style="opacity: 0.6; background-color: rgb(0, 0, 0);"></div>
-
-    <div class="container align-center">
-        <div class="row justify-content-md-center">
-            <div class="mbr-white col-md-12 col-lg-12">
-                <h1 class="mbr-section-title mbr-semibold pb-3 mbr-fonts-style align-center display-2"><%= user.username %>'s Profile</h1>
-                
-                <p class="mbr-text mbr-fonts-style align-center display-5"><%= user.bio %><br></p>
-                <h1 class="mbr-section-title mbr-semibold pb-3 mbr-fonts-style align-center display-2"><%= user.username %>'s Interests<br></h1>
-
-                <ul>
-                    <% for(var i = 0; i< user.interests.length; i++){ %>
-                        <li>  <%= user.interests[i] %>  </li>
-                    <% } %>
-                    </ul>
-                    
-                <% if (local.following.includes(user.username)) { %>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/unfollow/username/<%= user.username %>" onmouseout="this.innerText='Following'" onmouseover="this.innerText='Unfollow'">Following</a></div>
-                <% } else { %>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/follow/username/<%= user.username %>">Follow</a></div>
-                <% } %>
-            </div>
-        </div>
-    </div>
-    
-</section>
-
-<section class="content3 studiom4_content3 cid-sq4WPh8P6U" id="content3-h">
-
-	
-
-	
-	<div class="container">
-		<div class="row">
-			<div class="card col-12 col-md-6">
-				<div class="card-box">
-					<a href="/followers/<%= user.username %>" class="text-white mbr-bold">
-						<h4 class="card-title align-center mbr-fonts-style display-5">Followers&nbsp;<br>
-							<span class="mbr-regular">
-								<%= user.followers.length %>
-							</span>
-						</h4>
-					</a>
-				</div>
-			</div>
-			<div class="card col-12 col-md-6">
-				<div class="card-box">
-					<a href="/following/<%= user.username %>" class="text-white mbr-bold">
-						<h4 class="card-title align-center mbr-fonts-style display-5">Following&nbsp;<br>
-							<span class="mbr-regular">
-								<%= user.following.length %>
-                            </span>
-						</h4>
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
-</section>
-
 <section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
-
 	<div class="container">
 		<div class="row">
 			<div class="title col-12 align-center">
-				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">TIMELINE</h3>
-				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Get To Know Me</h2>
+				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">Search Results for <%= interest %></h3>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Explore your Interest</h2>
 			</div>
             <% for (var i = 0; i < posts.length; i++) { %>        
                 <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
@@ -85,17 +20,20 @@
                             <% } else { %>
                                 <span style="color: #f0ad4e; padding-right: 15px"><%= karma %></span>
                             <% } %>
-                            <% if (posts[i].likes.includes(local.username)) { %>
+                            <% if (posts[i].likes.includes(user.username)) { %>
                                 <a href="/unlike/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
                             <% } else { %>
                                 <a href="/like/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <% } %>
-                            <% if (posts[i].dislikes.includes(local.username)) { %>
+                            <% if (posts[i].dislikes.includes(user.username)) { %>
                                 <a href="/undislike/postId/<%= posts[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
                             <% } else { %>
                                 <a href="/dislike/postId/<%= posts[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <% } %>
-                            <span class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;"></span>    
+                            <% if (user.isAdmin) { %>
+                                <a href="/delete/postId/<%= posts[i]._id %>" class="far fa-trash-alt" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } %>
+                            <span class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;"></span>
                         </div>
                         <div class="card-box">
                             
@@ -107,7 +45,7 @@
                             </p>
                             <div class="card-people">
                                 <div class="user_image">
-                                    <img src="/assets/images/mbr-455x455.png" alt="">
+                                    <img src="assets/images/mbr-455x455.png" alt="">
                                 </div>
                                 <div class="wrapper-name">
                                     <a href="/profile/<%= posts[i].author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">

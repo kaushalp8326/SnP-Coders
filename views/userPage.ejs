@@ -72,6 +72,12 @@
                 <form class="card-inner" style="padding-bottom: 2.3rem;" action="/makePost" method="POST">
                     <input type="hidden" name="username" id="username" value = "<%= user.username %>">
                     <textarea required="required" name="postContent" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Your Post Here" style="width: 100%; background-color: transparent;"></textarea>
+                    <textarea required="required" name="interest" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Post Interest" style="width: 100%; background-color: transparent;"></textarea>
+                    <div class="mbr-section-btn align-right"><button type="submit" style="padding: 15px 30px;" class="btn btn-danger display-7">Post</button></div>
+                </form>
+                <form class="card-inner" style="padding-bottom: 2.3rem;" action="/searchPost" method="POST">
+                    <input type="hidden" name="username" id="username" value = "<%= user.username %>">
+                    <textarea required="required" name="interest" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Search via interest" style="width: 100%; background-color: transparent;"></textarea>
                     <div class="mbr-section-btn align-right"><button type="submit" style="padding: 15px 30px;" class="btn btn-danger display-7">Post</button></div>
                 </form>
             </div>
@@ -106,6 +112,9 @@
                             
                             <p class="mbr-text align-left mbr-fonts-style display-7">
                                 <%= posts[i].text %>
+                            </p>
+                            <p class="mbr-text align-left mbr-fonts-style display-7">
+                                Interest: <%= posts[i].interest %>
                             </p>
                             <div class="card-people">
                                 <div class="user_image">

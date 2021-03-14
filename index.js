@@ -39,7 +39,8 @@ const postSchema = {
     likes: [String],
     dislikes: [String],
     master: Boolean,
-    date: Date
+    date: Date,
+    interest: String
 };
 
 const User = new mongoose.model('User', userSchema);
@@ -456,6 +457,17 @@ app.post("/login", (req,res)=> {
     });
 });
 
+app.post("/searchPost", (req,res)=>{
+    Post.find({interest: req.body.interest}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            res.render('searchPostResults', {user: req.session.user, interest: req.body.interest, posts: foundPosts});
+        }
+    });
+});
+
+
 app.post("/ban", (req,res)=> {
     console.log(req.body.email);
 });
@@ -464,6 +476,7 @@ app.post("/makePost",(req,res)=> {
     const newPost = new Post({
         author: req.body.username,
         text: req.body.postContent,
+        interest: req.body.interest,
         master: true,
         date: new Date()
     });
@@ -481,6 +494,8 @@ app.post("/makePost",(req,res)=> {
         }
     });  
 });
+
+
 
 app.post("/editBio", (req, res) => {
     console.log(req.body.bio);
