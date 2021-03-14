@@ -363,6 +363,16 @@ app.get("/explore", (req, res) => {
     });
 });
 
+app.get("/viewReportedPosts", (req,res)=>{
+    Post.find({isReported: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            res.render('reportedPosts', {user: req.session.user, posts: foundPosts});
+        }
+    });
+});
+
 app.post("/register", (req, res) => {
     let validEmail = true;
     let validUsername = true;
@@ -467,7 +477,6 @@ app.post("/searchPost", (req,res)=>{
         }
     });
 });
-
 
 app.post("/ban", (req,res)=> {
     console.log(req.body.email);

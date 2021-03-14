@@ -20,6 +20,9 @@
                 </ul>
                 <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editBio" style="margin-right: 0;">Edit Bio</a></div>
                 <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editInterests" style="margin-right: 0;">Edit Interests</a></div>
+                <% if(user.isAdmin == true) { %>
+                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/viewReportedPosts" style="margin-right: 0;">View Reported Posts</a></div>
+                <% }%>
 
             </div>
         </div>
@@ -78,7 +81,7 @@
                 <form class="card-inner" style="padding-bottom: 2.3rem;" action="/searchPost" method="POST">
                     <input type="hidden" name="username" id="username" value = "<%= user.username %>">
                     <textarea required="required" name="interest" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Search via interest" style="width: 100%; background-color: transparent;"></textarea>
-                    <div class="mbr-section-btn align-right"><button type="submit" style="padding: 15px 30px;" class="btn btn-danger display-7">Post</button></div>
+                    <div class="mbr-section-btn align-right"><button type="submit" style="padding: 15px 30px;" class="btn btn-danger display-7">Search</button></div>
                 </form>
             </div>
             <% for (var i = 0; i < posts.length; i++) { %>        
