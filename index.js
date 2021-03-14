@@ -40,7 +40,8 @@ const postSchema = {
     dislikes: [String],
     master: Boolean,
     date: Date,
-    interest: String
+    interest: String,
+    isReported: Boolean
 };
 
 const User = new mongoose.model('User', userSchema);
@@ -478,7 +479,8 @@ app.post("/makePost",(req,res)=> {
         text: req.body.postContent,
         interest: req.body.interest,
         master: true,
-        date: new Date()
+        date: new Date(),
+        isReported: false
     });
     newPost.save(function(saveError) {
         if (saveError) {
@@ -552,6 +554,25 @@ app.post('/viewPost', (req, res) => {
             }
         }  
     });
+});
+
+app.get("/report/postId/:postId", (req, res) => {
+    const postId = req.params.postId;
+    const username = req.params.profile;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(reportPostError, reportPost) {
+        if (reportPostError) {
+            console.log(reportPostError);
+        } else {
+            reportPost.isReported=true;
+            reportPost.save(function(saveError) {
+                if (saveError) {
+                    console.log(saveError);
+                } else {
+                    res.redirect('back');
+                }
+            });
+        }
+    }));
 });
 
 app.listen(port, () => console.log('Node server listening on port 6969!'));
