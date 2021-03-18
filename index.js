@@ -26,6 +26,7 @@ const userSchema = {
     email: String,
     password: String,
     isAdmin: Boolean,
+    isBanned: Boolean,
     bio: String,
     joined: Date,
     following: [String],
@@ -41,7 +42,8 @@ const postSchema = {
     master: Boolean,
     date: Date,
     interest: String,
-    isReported: Boolean
+    isReported: Boolean,
+    isVisible: Boolean
 };
 
 const User = new mongoose.model('User', userSchema);
@@ -84,7 +86,7 @@ app.get('/delete', (req, res) => {
 });
 
 app.get('/profile', function (req, res) {
-    Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+    Post.find({author: req.session.user.username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
         if (findPostError) {
             console.log(findPostError);
         } else {
@@ -102,7 +104,7 @@ app.get('/profile/:profile', (req, res) => {
             if (error) {
                 console.log(error);
             } else {
-                Post.find({author: username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                Post.find({author: username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
                     if (findPostError) {
                         console.log(findPostError);
                     } else {
@@ -143,7 +145,7 @@ app.get('/makePost', function (req, res) {
 });
 
 app.get('/popular', (req, res) => {
-    Post.find({}).sort({likes: -1}).exec(function(findPostError, foundPosts) {
+    Post.find({isVisible: true}).sort({likes: -1}).exec(function(findPostError, foundPosts) {
         if (findPostError) {
             console.log(findPostError);
         } else {
@@ -353,6 +355,62 @@ app.get("/delete/postId/:postId", (req, res) => {
     }));
 });
 
+app.get("/ban/username/:username", (req, res) => {
+    if (req.session.user.isAdmin) {
+        const username = req.params.username;
+        User.findOne({username: username}, function(error, foundUser) {
+            foundUser.isBanned = true;
+            foundUser.save(function (saveErr) {
+                if (saveErr) {
+                    console.log(saveErr);
+                } else {
+                    Post.find({author: username}, function(findPostError, foundPosts) {
+                        foundPosts.forEach(function(post) {
+                            post.isVisible = false;
+                            post.save(function(postSaveErr) {
+                                if (postSaveErr) {
+                                    console.log(postSaveErr);
+                                }
+                            });
+                        });
+                    });
+                    res.redirect('back');
+                }
+            });
+        });
+    } else {
+        res.redirect('back');
+    }
+});
+
+app.get("/unban/username/:username", (req, res) => {
+    if (req.session.user.isAdmin) {
+        const username = req.params.username;
+        User.findOne({username: username}, function(error, foundUser) {
+            foundUser.isBanned = false;
+            foundUser.save(function (saveErr) {
+                if (saveErr) {
+                    console.log(saveErr);
+                } else {
+                    Post.find({author: username}, function(findPostError, foundPosts) {
+                        foundPosts.forEach(function(post) {
+                            post.isVisible = true;
+                            post.save(function(postSaveErr) {
+                                if (postSaveErr) {
+                                    console.log(postSaveErr);
+                                }
+                            });
+                        });
+                    });
+                    res.redirect('back');
+                }
+            });
+        });
+    } else {
+        res.redirect('back');
+    }
+});
+
 app.get("/explore", (req, res) => {
     User.find({}).exec(function(findPostError, foundUsers) {
         if (findPostError) {
@@ -469,7 +527,7 @@ app.post("/login", (req,res)=> {
 });
 
 app.post("/searchPost", (req,res)=>{
-    Post.find({interest: req.body.interest}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+    Post.find({interest: req.body.interest, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
         if (findPostError) {
             console.log(findPostError);
         } else {
@@ -489,7 +547,8 @@ app.post("/makePost",(req,res)=> {
         interest: req.body.interest,
         master: true,
         date: new Date(),
-        isReported: false
+        isReported: false,
+        isVisible: true
     });
     newPost.save(function(saveError) {
         if (saveError) {
