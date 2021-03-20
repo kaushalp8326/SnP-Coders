@@ -1,0 +1,122 @@
+<%- include("homeheader") -%>
+    
+    <section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
+
+        <div class="container">
+            <div class="row">
+                <div class="title col-12 align-center">
+                    <h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">POST</h3>
+                    <h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Leave a Comment</h2>
+                </div>
+                <div class="card col-12" style="padding: 15px;">
+                    <div class="card-inner">
+                        <div class="card-img align-left">
+                            <% karma = post.likes.length - post.dislikes.length %>
+                            <% if (Math.abs(karma) > 9999 && Math.abs(karma) < 1000000) { %>
+                                <% karma = (karma / 1000).toFixed(1)%>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %>k</span>
+                            <% } else if (Math.abs(karma) > 1000000){ %>
+                                <% karma = (karma / 1000000).toFixed(2)%>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %>m</span>
+                            <% } else { %>
+                                <span style="color: #f0ad4e; padding-right: 15px"><%= karma %></span>
+                            <% } %>
+                            <% if (post.likes.includes(user.username)) { %>
+                                <a href="/unlike/postId/<%= post._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
+                            <% } else { %>
+                                <a href="/like/postId/<%= post._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } %>
+                            <% if (post.dislikes.includes(user.username)) { %>
+                                <a href="/undislike/postId/<%= post._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
+                            <% } else { %>
+                                <a href="/dislike/postId/<%= post._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } %>
+                        </div>
+                        <div class="card-box">
+                            
+                            <p class="mbr-text align-left mbr-fonts-style display-7">
+                                <%= post.text %>
+                            </p>
+                            <p class="mbr-author-desc mbr-fonts-style display-4">
+                                <%= post.interest %>
+                            </p>
+                            <div class="card-people">
+                                <div class="user_image">
+                                    <img src="/assets/images/mbr-455x455.png" alt="">
+                                </div>
+                                <div class="wrapper-name">
+                                    <a href="/profile/<%= post.author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
+                                        <%= post.author %>
+                                    </a>
+                                    <div class="mbr-author-desc mbr-fonts-style display-4">
+                                        <%= post.date.toDateString() %></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card col-12">
+                    <form class="card-inner" style="padding-bottom: 2.3rem;" action="/makeComment" method="POST">
+                        <input type="hidden" name="username" id="username" value = "<%= user.username %>">
+                        <input type="hidden" name="parentPost" id="parentPost" value = "<%= post._id %>">
+                        <textarea required="required" name="postContent" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Your Post Here" style="width: 100%; background-color: transparent;"></textarea>
+                        <textarea required="required" name="interest" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Post Interest" style="width: 100%; background-color: transparent;"></textarea>
+                        <div class="mbr-section-btn align-right"><button type="submit" style="padding: 15px 30px;" class="btn btn-danger display-7">Comment</button></div>
+                    </form>
+                </div>
+                <% for (var i = 0; i < post.comments.length; i++) { %>        
+                    <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
+                        <div class="card-inner">
+                            <div class="card-img align-left">
+                                <% karma = post.comments[i].likes.length - post.comments[i].dislikes.length %>
+                                <% if (Math.abs(karma) > 9999 && Math.abs(karma) < 1000000) { %>
+                                    <% karma = (karma / 1000).toFixed(1)%>
+                                    <span style="color: #f0ad4e; padding-right: 15px"><%= karma %>k</span>
+                                <% } else if (Math.abs(karma) > 1000000){ %>
+                                    <% karma = (karma / 1000000).toFixed(2)%>
+                                    <span style="color: #f0ad4e; padding-right: 15px"><%= karma %>m</span>
+                                <% } else { %>
+                                    <span style="color: #f0ad4e; padding-right: 15px"><%= karma %></span>
+                                <% } %>
+                                <% if (post.comments[i].likes.includes(user.username)) { %>
+                                    <a href="/unlike/postId/<%= post.comments[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
+                                <% } else { %>
+                                    <a href="/like/postId/<%= post.comments[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                                <% } %>
+                                <% if (post.comments[i].dislikes.includes(user.username)) { %>
+                                    <a href="/undislike/postId/<%= post.comments[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
+                                <% } else { %>
+                                    <a href="/dislike/postId/<%= post.comments[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                                <% } %>
+                                <a href="/viewPost/postId/<%= post.comments[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                                <a href="/report/postId/<%= post.comments[i]._id %>" class="far fa-flag" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>    
+                            </div>
+                            <div class="card-box">
+                                
+                                <p class="mbr-text align-left mbr-fonts-style display-7">
+                                    <%= post.comments[i].text %>
+                                </p>
+                                <p class="mbr-author-desc mbr-fonts-style display-4">
+                                    <%= post.comments[i].interest %>
+                                </p>
+                                <div class="card-people">
+                                    <div class="user_image">
+                                        <img src="/assets/images/mbr-455x455.png" alt="">
+                                    </div>
+                                    <div class="wrapper-name">
+                                        <a href="/profile/<%= post.comments[i].author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
+                                            <%= post.comments[i].author %>
+                                        </a>
+                                        <div class="mbr-author-desc mbr-fonts-style display-4">
+                                            <%= post.comments[i].date.toDateString() %></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </section>
+
+<%- include("footer") -%>

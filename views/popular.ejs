@@ -33,7 +33,7 @@
                             <% if (user.isAdmin) { %>
                                 <a href="/delete/postId/<%= posts[i]._id %>" class="far fa-trash-alt" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <% } %>
-                            <span class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></span>
+                            <a href="/viewPost/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <a href="/report/postId/<%= posts[i]._id %>" class="far fa-flag" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                         </div>
                         <div class="card-box">

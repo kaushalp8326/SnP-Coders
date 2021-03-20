@@ -43,7 +43,8 @@ const postSchema = {
     date: Date,
     interest: String,
     isReported: Boolean,
-    isVisible: Boolean
+    isVisible: Boolean,
+    comments: [{type: mongoose.Types.ObjectId, ref: "Post"}]
 };
 
 const User = new mongoose.model('User', userSchema);
@@ -159,6 +160,19 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
+app.get("/viewPost/postId/:postId", (req,res)=>{
+    const postId = req.params.postId;
+    Post.findOne({_id: mongoose.Types.ObjectId(postId)}).populate('comments').exec(function(err, post) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            if (post) {
+                res.render('viewPost', {post: post, user: req.session.user});
+            }
+        }
+    });
+});
 
 app.get("/like/postId/:postId", (req, res) => {
     const user = req.session.user.username;
@@ -565,7 +579,31 @@ app.post("/makePost",(req,res)=> {
     });  
 });
 
+app.post("/makeComment", (req,res)=>{
+    const newPost = new Post({
+        author: req.body.username,
+        text: req.body.postContent,
+        interest: req.body.interest,
+        master: false,
+        date: new Date(),
+        isReported: false,
+        isVisible: true
+    });
+    Post.findOne({_id: mongoose.Types.ObjectId(req.body.parentPost)}, function(error, post){
+        if (error){
+            console.log(error);
+        }
+        else {
+            if (post) {
+                newPost.save();
+                post.comments.push(newPost);
+                post.save();
+                res.redirect("back");
 
+            }
+        }
+    })
+});
 
 app.post("/editBio", (req, res) => {
     console.log(req.body.bio);
