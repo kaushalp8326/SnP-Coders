@@ -226,7 +226,7 @@ app.get('/profile/:profile', (req, res) => {
 
 // Explore Page
 app.get("/explore", (req, res) => {
-    User.find({}).exec(function(findPostError, foundUsers) {
+    User.find({isBanned: false}).exec(function(findPostError, foundUsers) {
         if (findPostError) {
             console.log(findPostError);
         } else {
@@ -453,11 +453,21 @@ app.post("/makePost",(req,res)=> {
 });
 
 app.post("/searchPost", (req,res)=>{
+    /*
     Post.find({interest: req.body.interest, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
         if (findPostError) {
             console.log(findPostError);
         } else {
             res.render('searchPostResults', {user: req.session.user, interest: req.body.interest, posts: foundPosts});
+        }
+    });
+    */
+   //db.posts.find({$text: {$search: "comment reply"}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}});
+   Post.find({$text: {$search: req.body.keywords}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}}).exec(function(findPostError, foundPosts) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            res.render('searchPostResults', {user: req.session.user, keywords: req.body.keywords, posts: foundPosts});
         }
     });
 });
