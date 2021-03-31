@@ -69,13 +69,14 @@ app.get('/editInterests', (req, res) => {
 
 app.get('/login', (req, res) => {
     if (req.session.user) {
-        Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-            if (findPostError) {
-                console.log(findPostError);
-            } else {
-                res.render('userPage', {user: req.session.user, posts: foundPosts});
-            }
-        });
+        res.redirect('home');
+        // Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+        //     if (findPostError) {
+        //         console.log(findPostError);
+        //     } else {
+        //         res.render('home', {user: req.session.user, posts: foundPosts});
+        //     }
+        // });
     }
     else {
         res.render('login');
@@ -143,6 +144,16 @@ app.get('/following/:username', (req, res) => {
 
 app.get('/makePost', function (req, res) {
     res.redirect("login");
+});
+
+app.get('/home', (req, res) => {
+    Post.find({isVisible: true, author: {$in: req.session.user.following}}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            res.render('home', {user: req.session.user, posts: foundPosts});
+        }
+    });
 });
 
 app.get('/popular', (req, res) => {
@@ -521,13 +532,14 @@ app.post("/login", (req,res)=> {
                     } else {
                         if (result === true) {
                             req.session.user = foundUser;
-                            Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-                                if (findPostError) {
-                                    console.log(findPostError);
-                                } else {
-                                    res.render('userPage', {user: req.session.user, posts: foundPosts});
-                                }
-                            });
+                            // Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                            //     if (findPostError) {
+                            //         console.log(findPostError);
+                            //     } else {
+                            //         res.render('userPage', {user: req.session.user, posts: foundPosts});
+                            //     }
+                            // });
+                            res.redirect('home');
                         } else {
                             res.render('login', {loginfail: 'Failed login attempt'});
                         }
