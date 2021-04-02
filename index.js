@@ -722,6 +722,16 @@ app.get("/viewReportedPosts", (req,res)=>{
     });
 });
 
+app.get("/viewBannedUsers", (req, res)=> {
+    User.find({isBanned: {$eq: true}}).exec(function(findPostError, foundUsers) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            res.render('bannedUsers', {users: foundUsers});
+        }
+    });
+});
+
 app.get("/ban/username/:username", (req, res) => {
     if (req.session.user.isAdmin) {
         const username = req.params.username;
