@@ -46,6 +46,7 @@ const postSchema = {
     interest: String,
     isReported: Boolean,
     isVisible: Boolean,
+    isAnnouncement: Boolean,
     comments: [{type: mongoose.Types.ObjectId, ref: "Post"}]
 };
 
@@ -249,6 +250,16 @@ app.get('/popular', (req, res) => {
     });
 });
 
+app.get('/announcements', (req, res) => {
+    Post.find({isAnnouncement: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            res.render('announcements', {user: req.session.user, posts: foundPosts});
+        }
+    });
+});
+
 
 // Logout
 app.get('/logout', (req, res) => {
@@ -280,6 +291,10 @@ app.post("/changePic", (req, res) => {
 
 app.get('/editBio', (req, res) => {
     res.render('editBio', {user: req.session.user});
+});
+
+app.get('/makeAnnouncement', (req, res) => {
+    res.render('makeAnnouncement', {user: req.session.user});
 });
 
 app.post("/editBio", (req, res) => {
@@ -457,7 +472,34 @@ app.post("/makePost",(req,res)=> {
         master: true,
         date: new Date(),
         isReported: false,
-        isVisible: true
+        isVisible: true,
+        isAnnouncement: false
+    });
+    newPost.save(function(saveError) {
+        if (saveError) {
+            console.log(saveError);
+        } else {
+            Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                if (findPostError) {
+                    console.log(findPostError);
+                } else {
+                    res.render('userPage', {user: req.session.user, posts: foundPosts});
+                }
+            });
+        }
+    });  
+});
+
+app.post("/makeAnnouncement",(req,res)=> {
+    const newPost = new Post({
+        author: req.body.username,
+        text: req.body.postContent,
+        interest: req.body.interest,
+        master: true,
+        date: new Date(),
+        isReported: false,
+        isVisible: true,
+        isAnnouncement: true
     });
     newPost.save(function(saveError) {
         if (saveError) {

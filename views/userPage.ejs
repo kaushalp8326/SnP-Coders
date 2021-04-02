@@ -101,7 +101,9 @@
                     <% if(user.isAdmin == true) { %>
                         <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/viewReportedPosts" style="margin-right: 0;">View Reported Posts</a></div>
                     <% }%>
-
+                    <% if(user.isAdmin == true) { %>
+                        <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/makeAnnouncement" style="margin-right: 0;">Make An Announcement</a></div>
+                    <% }%>
                 </div>
             </div>
         </div>
