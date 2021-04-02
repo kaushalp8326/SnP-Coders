@@ -276,7 +276,7 @@ app.post("/changePic", (req, res) => {
             }
         });
     }
-})
+});
 
 app.get('/editBio', (req, res) => {
     res.render('editBio', {user: req.session.user});
@@ -294,7 +294,7 @@ app.post("/editBio", (req, res) => {
             }
         }
     });
-})
+});
 
 app.get('/editInterests', (req, res) => {
     res.render('editInterests', {user: req.session.user});
