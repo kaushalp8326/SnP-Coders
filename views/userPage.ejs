@@ -93,8 +93,11 @@
                         <li>  <%= user.interests[i] %>  </li>
                     <% } %>
                     </ul>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editBio" style="margin-right: 0;">Edit Bio</a></div>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editInterests" style="margin-right: 0;">Edit Interests</a></div>
+                    <div class="row justify-content-md-left">
+                        <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/changePic" style="margin-right: 0;">Change Picture</a></div>
+                        <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editBio" style="margin-right: 0;">Edit Bio</a></div>
+                        <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editInterests" style="margin-right: 0;">Edit Interests</a></div>
+                    </div>
                     <% if(user.isAdmin == true) { %>
                         <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/viewReportedPosts" style="margin-right: 0;">View Reported Posts</a></div>
                     <% }%>
@@ -198,7 +201,11 @@
                                 </p>
                                 <div class="card-people">
                                     <div class="user_image">
-                                        <img src="assets/images/mbr-455x455.png" alt="">
+                                        <% if (user.picture != null) { %>
+                                            <img src="<%= user.picture %>" alt="">
+                                        <% } else { %>
+                                            <img src="assets/images/mbr-455x455.png" alt="">
+                                        <% } %>
                                     </div>
                                     <div class="wrapper-name">
                                         <a href="/profile/<%= posts[i].author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">

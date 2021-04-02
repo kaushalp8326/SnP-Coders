@@ -1,0 +1,24 @@
+<%- include("homeheader") -%>
+
+<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j" style="min-height: 91vh;">
+
+	<div class="container">
+		<div class="row">
+			<div class="title col-12 align-center">
+				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">CHANGE YOUR PROFILE PICTURE</h3>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Link an Image</h2>
+			</div>
+            <div class="card col-12">
+                <form class="card-inner" style="padding-bottom: 2.3rem;" action="/changePic" method="POST">
+                    <textarea required="required" name="picture" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Picture URL Here" style="width: 100%; background-color: transparent;"></textarea>
+                    <div style="display: flex; justify-content: flex-end;">
+                        <div class="mbr-section-btn align-right"><button type="submit" style="padding: 15px 30px;" class="btn btn-danger display-7">Change</button></div>
+                        <div class="mbr-section-btn align-right"><a href="/profile" style="padding: 15px 30px; margin-right: 0;" class="btn btn-danger display-7">Cancel</a></div>
+                    </div>
+                </form>
+            </div>
+		</div>
+	</div>
+</section>
+
+<%- include("footer") -%>

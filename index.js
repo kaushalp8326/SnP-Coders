@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const isImageUrl = require('is-image-url');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const express = require('express');
@@ -27,6 +28,7 @@ const userSchema = {
     password: String,
     isAdmin: Boolean,
     isBanned: Boolean,
+    picture: String,
     bio: String,
     joined: Date,
     following: [String],
@@ -226,7 +228,7 @@ app.get('/profile/:profile', (req, res) => {
 
 // Explore Page
 app.get("/explore", (req, res) => {
-    User.find({isBanned: false}).exec(function(findPostError, foundUsers) {
+    User.find({isBanned: {$ne: true}}).exec(function(findPostError, foundUsers) {
         if (findPostError) {
             console.log(findPostError);
         } else {
@@ -256,6 +258,26 @@ app.get('/logout', (req, res) => {
 
 
 // Profile Interactions
+app.get('/changePic', (req, res) => {
+    res.render('changePic', {user: req.session.user});
+});
+
+app.post("/changePic", (req, res) => {
+    if (isImageUrl(req.body.picture)) {
+        User.findByIdAndUpdate(req.session.user._id, {picture: req.body.picture}, {new: true}, function (error, updatedUser) {
+            if (error) {
+                console.log(error);
+            }
+            else {
+                if (updatedUser) {
+                    req.session.user = updatedUser;
+                    res.redirect("/profile");
+                }
+            }
+        });
+    }
+})
+
 app.get('/editBio', (req, res) => {
     res.render('editBio', {user: req.session.user});
 });

@@ -12,7 +12,11 @@
                         <div class="card-box">
                             <div class="card-people">
                                 <div class="user_image">
-                                    <img src="assets/images/mbr-455x455.png" alt="">
+                                    <% if (users[i].picture != null) { %>
+                                        <img src="<%= users[i].picture %>" alt="">
+                                    <% } else { %>
+                                        <img src="assets/images/mbr-455x455.png" alt="">
+                                    <% } %>
                                 </div>
                                 <div class="wrapper-name">
                                     <a href="/profile/<%= users[i].username %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
