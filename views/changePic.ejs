@@ -8,6 +8,9 @@
 				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">CHANGE YOUR PROFILE PICTURE</h3>
 				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Link an Image</h2>
 			</div>
+            <% if (invalidURL) { %>
+                <p> The URL you provided is not a valid image</p>
+            <% } %>
             <div class="card col-12">
                 <form class="card-inner" style="padding-bottom: 2.3rem;" action="/changePic" method="POST">
                     <textarea required="required" name="picture" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Picture URL Here" style="width: 100%; background-color: transparent;"></textarea>

@@ -270,7 +270,7 @@ app.get('/logout', (req, res) => {
 
 // Profile Interactions
 app.get('/changePic', (req, res) => {
-    res.render('changePic', {user: req.session.user});
+    res.render('changePic', {user: req.session.user, invalidURL: false});
 });
 
 app.post("/changePic", (req, res) => {
@@ -286,6 +286,8 @@ app.post("/changePic", (req, res) => {
                 }
             }
         });
+    } else {
+        res.render('changePic', {user: req.session.user, invalidURL: true});
     }
 });
 
