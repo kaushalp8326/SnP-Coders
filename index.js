@@ -130,14 +130,18 @@ app.post("/register", (req, res) => {
 // Login Pages
 app.get('/login', (req, res) => {
     if (req.session.user) {
-        res.redirect('home');
-        // Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-        //     if (findPostError) {
-        //         console.log(findPostError);
-        //     } else {
-        //         res.render('home', {user: req.session.user, posts: foundPosts});
-        //     }
-        // });
+        if (req.session.user.isBanned) {
+            res.render('userPage', {user: req.session.user});
+        } else {
+            res.redirect('home');
+            // Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+            //     if (findPostError) {
+            //         console.log(findPostError);
+            //     } else {
+            //         res.render('home', {user: req.session.user, posts: foundPosts});
+            //     }
+            // });
+        }
     }
     else {
         res.render('login');
@@ -158,15 +162,19 @@ app.post("/login", (req,res)=> {
                         console.log(compareError);
                     } else {
                         if (result === true) {
-                            req.session.user = foundUser;
-                            // Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-                            //     if (findPostError) {
-                            //         console.log(findPostError);
-                            //     } else {
-                            //         res.render('userPage', {user: req.session.user, posts: foundPosts});
-                            //     }
-                            // });
-                            res.redirect('home');
+                            if (foundUser.isBanned) {
+                                res.render('userPage', {user: foundUser});
+                            } else {
+                                req.session.user = foundUser;
+                                // Post.find({author: req.session.user.username}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                                //     if (findPostError) {
+                                //         console.log(findPostError);
+                                //     } else {
+                                //         res.render('userPage', {user: req.session.user, posts: foundPosts});
+                                //     }
+                                // });
+                                res.redirect('home');
+                            }
                         } else {
                             res.render('login', {loginfail: 'Failed login attempt'});
                         }
@@ -270,7 +278,7 @@ app.get('/logout', (req, res) => {
 
 // Profile Interactions
 app.get('/changePic', (req, res) => {
-    res.render('changePic', {user: req.session.user});
+    res.render('changePic', {user: req.session.user, invalidURL: false});
 });
 
 app.post("/changePic", (req, res) => {
@@ -286,6 +294,8 @@ app.post("/changePic", (req, res) => {
                 }
             }
         });
+    } else {
+        res.render('changePic', {user: req.session.user, invalidURL: true});
     }
 });
 
@@ -718,6 +728,16 @@ app.get("/viewReportedPosts", (req,res)=>{
             console.log(findPostError);
         } else {
             res.render('reportedPosts', {user: req.session.user, posts: foundPosts});
+        }
+    });
+});
+
+app.get("/viewBannedUsers", (req, res)=> {
+    User.find({isBanned: {$eq: true}}).exec(function(findPostError, foundUsers) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            res.render('bannedUsers', {users: foundUsers});
         }
     });
 });
