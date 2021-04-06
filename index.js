@@ -229,7 +229,7 @@ app.get('/profile/:profile', (req, res) => {
 
 // Explore Page
 app.get("/explore", (req, res) => {
-    User.find({isBanned: {$ne: true}}).exec(function(findPostError, foundUsers) {
+    User.find({isBanned: {$ne: true}, username: {$ne: req.session.user.username}}).exec(function(findPostError, foundUsers) {
         if (findPostError) {
             console.log(findPostError);
         } else {
@@ -527,7 +527,7 @@ app.post("/searchPost", (req,res)=>{
     });
     */
    //db.posts.find({$text: {$search: "comment reply"}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}});
-   Post.find({$text: {$search: req.body.keywords}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}}).exec(function(findPostError, foundPosts) {
+   Post.find({$text: {$search: req.body.keywords}, author: {$ne: req.session.user.username}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}}).exec(function(findPostError, foundPosts) {
         if (findPostError) {
             console.log(findPostError);
         } else {
