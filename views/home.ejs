@@ -46,7 +46,14 @@
                             </p>
                             <div class="card-people">
                                 <div class="user_image">
-                                    <img src="assets/images/mbr-455x455.png" alt="">
+                                    <% userIndex = users.indexOf(users.find(j => j.username === posts[i].author)); %>
+                                    <% if (userIndex === -1) { %>
+                                        <img src="assets/images/mbr-455x455.png" alt="">
+                                    <% } else if (users[userIndex].picture != null) { %>
+                                        <img src="<%= users[userIndex].picture %>" alt="">
+                                    <% } else { %>
+                                        <img src="assets/images/mbr-455x455.png" alt="">
+                                    <% } %>
                                 </div>
                                 <div class="wrapper-name">
                                     <a href="/profile/<%= posts[i].author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">

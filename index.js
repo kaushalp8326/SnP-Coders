@@ -194,7 +194,17 @@ app.get('/home', (req, res) => {
         if (findPostError) {
             console.log(findPostError);
         } else {
-            res.render('home', {user: req.session.user, posts: foundPosts});
+            authors = []
+            for (post of foundPosts) {
+                authors.push(post.author);
+            }
+            User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) {
+                if (findUserError) {
+                    console.log(findUserError);
+                } else {
+                    res.render('home', {user: req.session.user, posts: foundPosts, users: foundUsers});
+                }
+            });
         }
     });
 });
@@ -250,20 +260,68 @@ app.get("/explore", (req, res) => {
 // Popular Page
 app.get('/popular', (req, res) => {
     Post.find({isVisible: true}).sort({likes: -1}).exec(function(findPostError, foundPosts) {
+        foundPosts = sortPopular(foundPosts, 0, foundPosts.length - 1);
         if (findPostError) {
             console.log(findPostError);
         } else {
-            res.render('popular', {user: req.session.user, posts: foundPosts});
+            authors = []
+            for (post of foundPosts) {
+                authors.push(post.author);
+            }
+            User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) {
+                if (findUserError) {
+                    console.log(findUserError);
+                } else {
+                    res.render('popular', {user: req.session.user, posts: foundPosts, users: foundUsers});
+                }
+            });
         }
     });
 });
 
+function sortPopular(posts, start, end) {
+    if (start < end) {
+        pivot = posts[end].likes.length - posts[end].dislikes.length;
+        i = (start - 1);
+
+        for (j = start; j < end; j++) {
+            if ((posts[j].likes.length - posts[j].dislikes.length) >= pivot) {
+                i++;
+
+                swapTemp = posts[i];
+                posts[i] = posts[j];
+                posts[j] = swapTemp;
+            }
+        }
+
+        swapTemp = posts[i+1];
+        posts[i+1] = posts[end];
+        posts[end] = swapTemp;
+
+        posts = sortPopular(posts, start, i)
+        posts = sortPopular(posts, i + 2, end)
+    }
+
+    return posts;
+}
+
+// Announcements Page
 app.get('/announcements', (req, res) => {
     Post.find({isAnnouncement: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
         if (findPostError) {
             console.log(findPostError);
         } else {
-            res.render('announcements', {user: req.session.user, posts: foundPosts});
+            authors = []
+            for (post of foundPosts) {
+                authors.push(post.author);
+            }
+            User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) {
+                if (findUserError) {
+                    console.log(findUserError);
+                } else {
+                    res.render('announcements', {user: req.session.user, posts: foundPosts, users: foundUsers});
+                }
+            });
         }
     });
 });
