@@ -451,17 +451,32 @@ app.post("/submitInterest", (req, res) => {
             res.redirect("/profile");
         }else{
             //add tag
-            const newInterest = new Interest({
-                name: submittedTag,
-                approved: false
-            });
-            newInterest.save(function(saveError) {
-                if(saveError){
-                    console.log(saveError);
-                }else{
-                    res.redirect("/profile");
-                }
-            });
+            if (req.session.user.isAdmin){
+                //auto approve interests submitted by admins
+                const newInterest = new Interest({
+                    name: submittedTag,
+                    approved: true
+                });
+                newInterest.save(function(saveError) {
+                    if(saveError){
+                        console.log(saveError);
+                    }else{
+                        res.redirect("/profile");
+                    }
+                });
+            }else{
+                const newInterest = new Interest({
+                    name: submittedTag,
+                    approved: false
+                });
+                newInterest.save(function(saveError) {
+                    if(saveError){
+                        console.log(saveError);
+                    }else{
+                        res.redirect("/profile");
+                    }
+                });
+            }
         }
     });
 });
