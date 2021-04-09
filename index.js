@@ -50,8 +50,14 @@ const postSchema = {
     comments: [{type: mongoose.Types.ObjectId, ref: "Post"}]
 };
 
+const interestSchema = {
+    name: String,
+    approved: Boolean
+};
+
 const User = new mongoose.model('User', userSchema);
 const Post = new mongoose.model('Post', postSchema);
+const Interest = new mongoose.model('Interest', interestSchema);
 
 
 // Landing Page
@@ -429,6 +435,35 @@ app.get("/delete/userint/:interest", (req, res) => {
             }   
         }
     }));
+});
+
+app.get('/submitInterest', (req, res) => {
+    res.render('submitInterest', {user: req.session.user});
+});
+
+app.post("/submitInterest", (req, res) => {
+    var submittedTag = req.body.tag;
+    Interest.countDocuments({name: submittedTag}, function(error, count){
+        if(error){
+            console.log(error);
+        }else if(count > 0){
+            //tag already exists
+            res.redirect("/profile");
+        }else{
+            //add tag
+            const newInterest = new Interest({
+                name: submittedTag,
+                approved: false
+            });
+            newInterest.save(function(saveError) {
+                if(saveError){
+                    console.log(saveError);
+                }else{
+                    res.redirect("/profile");
+                }
+            });
+        }
+    });
 });
 
 app.get('/followers/:username', (req, res) => {

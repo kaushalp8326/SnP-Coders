@@ -97,13 +97,16 @@
                         <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/changePic" style="margin-right: 0;">Change Picture</a></div>
                         <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editBio" style="margin-right: 0;">Edit Bio</a></div>
                         <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/editInterests" style="margin-right: 0;">Edit Interests</a></div>
+                        <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/submitInterest" style="margin-right: 0;">Submit New Interest Tag</a></div>
                     </div>
                     <% if(user.isAdmin == true) { %>
-                        <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/viewReportedPosts" style="margin-right: 0;">View Reported Posts</a></div>
-                        <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/viewBannedUsers" style="margin-right: 0;">View Banned Users</a></div>
-                    <% }%>
-                    <% if(user.isAdmin == true) { %>
-                        <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/makeAnnouncement" style="margin-right: 0;">Make An Announcement</a></div>
+                        <div class="row justify-content-md-left">
+                            <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/viewReportedPosts" style="margin-right: 0;">View Reported Posts</a></div>
+                            <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/viewBannedUsers" style="margin-right: 0;">View Banned Users</a></div>
+                        </div>
+                        <div class="row justify-content-md-left">
+                            <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" href="/makeAnnouncement" style="margin-right: 0;">Make An Announcement</a></div>
+                        </div>
                     <% }%>
                 </div>
             </div>
