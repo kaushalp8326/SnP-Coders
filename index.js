@@ -66,6 +66,12 @@ app.get('/', (req, res) => {
 });
 
 
+// Error Page
+app.get('/error', (req, res) => {
+    res.render('error');
+});
+
+
 // Register Pages
 app.get('/register', (req, res) => {
     res.render('register', {registerFail: []});
