@@ -1,0 +1,28 @@
+<%- include("homeheader") -%>
+<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
+	<div class="container">
+		<div class="row">
+			<div class="title col-12 align-center">
+				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">INTEREST TAGS</h3>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Tags to Review</h2>
+			</div>
+            <% for (var i = 0; i < tags.length; i++) { %>
+                <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
+                    <div class="card-inner">
+                        <div class="card-img align-left">
+                            <a href="/reject/tag/<%= tags[i].id %>" class="fas fa-ban" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <a href="/approve/tag/<%= tags[i].id %>" class="fas fa-check" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                        </div>
+                        <div class="card-box">
+                            <p class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7">
+                                <%= tags[i].name %>
+                            </p>
+                        </div>
+                    </div>
+                </div>       
+            <% } %>
+		</div>
+	</div>
+</section>
+
+<%- include("footer") -%>

@@ -251,6 +251,28 @@ app.get('/profile/:profile', (req, res) => {
 });
 
 
+// Announcements Page
+app.get('/announcements', (req, res) => {
+    Post.find({isAnnouncement: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+        if (findPostError) {
+            console.log(findPostError);
+        } else {
+            authors = []
+            for (post of foundPosts) {
+                authors.push(post.author);
+            }
+            User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) {
+                if (findUserError) {
+                    console.log(findUserError);
+                } else {
+                    res.render('announcements', {user: req.session.user, posts: foundPosts, users: foundUsers});
+                }
+            });
+        }
+    });
+});
+
+
 // Explore Page
 app.get("/explore", (req, res) => {
     User.find({isBanned: {$ne: true}, username: {$ne: req.session.user.username}}).exec(function(findPostError, foundUsers) {
@@ -311,27 +333,6 @@ function sortPopular(posts, start, end) {
     return posts;
 }
 
-// Announcements Page
-app.get('/announcements', (req, res) => {
-    Post.find({isAnnouncement: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-        if (findPostError) {
-            console.log(findPostError);
-        } else {
-            authors = []
-            for (post of foundPosts) {
-                authors.push(post.author);
-            }
-            User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) {
-                if (findUserError) {
-                    console.log(findUserError);
-                } else {
-                    res.render('announcements', {user: req.session.user, posts: foundPosts, users: foundUsers});
-                }
-            });
-        }
-    });
-});
-
 
 // Logout
 app.get('/logout', (req, res) => {
@@ -365,10 +366,6 @@ app.post("/changePic", (req, res) => {
 
 app.get('/editBio', (req, res) => {
     res.render('editBio', {user: req.session.user});
-});
-
-app.get('/makeAnnouncement', (req, res) => {
-    res.render('makeAnnouncement', {user: req.session.user});
 });
 
 app.post("/editBio", (req, res) => {
@@ -608,6 +605,10 @@ app.post("/makePost",(req,res)=> {
     });  
 });
 
+app.get('/makeAnnouncement', (req, res) => {
+    res.render('makeAnnouncement', {user: req.session.user});
+});
+
 app.post("/makeAnnouncement",(req,res)=> {
     const newPost = new Post({
         author: req.body.username,
@@ -635,15 +636,6 @@ app.post("/makeAnnouncement",(req,res)=> {
 });
 
 app.post("/searchPost", (req,res)=>{
-    /*
-    Post.find({interest: req.body.interest, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-        if (findPostError) {
-            console.log(findPostError);
-        } else {
-            res.render('searchPostResults', {user: req.session.user, interest: req.body.interest, posts: foundPosts});
-        }
-    });
-    */
    //db.posts.find({$text: {$search: "comment reply"}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}});
    Post.find({$text: {$search: req.body.keywords}, author: {$ne: req.session.user.username}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}}).exec(function(findPostError, foundPosts) {
         if (findPostError) {
@@ -905,6 +897,45 @@ app.get("/unban/username/:username", (req, res) => {
         res.redirect('back');
     }
 });
+
+app.get("/viewInterestSubmissions", (req,res)=>{
+    Interest.find({approved: false}, function(error, foundTags){
+        if(error){
+            console.log(error);
+        }else{
+            res.render('viewInterestSubmissions', {tags: foundTags});
+        }
+    });
+});
+
+app.get("/approve/tag/:id", (req, res) => {
+    if (req.session.user.isAdmin) {
+        Interest.findByIdAndUpdate(req.params.id, {approved: true}, function(error){
+            if(error){
+                console.log(error);
+            }else{
+                res.redirect('back');
+            }
+        });
+    } else {
+        res.redirect('back');
+    }
+});
+
+app.get("/reject/tag/:id", (req, res) => {
+    if (req.session.user.isAdmin) {
+        Interest.deleteOne({_id: req.params.id}, (function(deleteTagError) {
+            if (deleteTagError) {
+                console.log(deleteTagError);
+            } else {
+                res.redirect('back');
+            }
+        }));
+    } else {
+        res.redirect('back');
+    }
+});
+
 
 // Deprecated?
 // app.get('/delete', (req, res) => {
