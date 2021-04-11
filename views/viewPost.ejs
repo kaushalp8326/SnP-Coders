@@ -1,5 +1,9 @@
-<%- include("homeheader") -%>
-    
+<% if (user.isAdmin) { %>
+    <%- include("adminheader") -%>
+<% } else { %> 
+    <%- include("homeheader") -%>
+<% } %>
+
     <section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
 
         <div class="container">
@@ -60,7 +64,6 @@
                         <input type="hidden" name="username" id="username" value = "<%= user.username %>">
                         <input type="hidden" name="parentPost" id="parentPost" value = "<%= post._id %>">
                         <textarea required="required" name="postContent" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Your Post Here" style="width: 100%; background-color: transparent;"></textarea>
-                        <textarea required="required" name="interest" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Post Interest" style="width: 100%; background-color: transparent;"></textarea>
                         <div class="mbr-section-btn align-right"><button type="submit" style="padding: 15px 30px;" class="btn btn-danger display-7">Comment</button></div>
                     </form>
                 </div>

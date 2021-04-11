@@ -1,4 +1,9 @@
-<%- include("homeheader") -%>
+<% if (local.isAdmin) { %>
+    <%- include("adminheader") -%>
+<% } else { %> 
+    <%- include("homeheader") -%>
+<% } %>
+
 <section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" style="min-height: 91vh;" id="testimonials2-j">
 	<div class="container">
 		<div class="row">

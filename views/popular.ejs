@@ -1,13 +1,31 @@
-<%- include("homeheader") -%>
-<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
+<% if (user.isAdmin) { %>
+    <%- include("adminheader") -%>
+<% } else { %> 
+    <%- include("homeheader") -%>
+<% } %>
+
+<section style="min-height: 55rem;" class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
 	<div class="container">
 		<div class="row">
 			<div class="title col-12 align-center">
 				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">POPULAR POSTS</h3>
 				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Explore the hottest Posts</h2>
 			</div>
-            <% for (var i = 0; i < posts.length; i++) { %>        
-                <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
+            <div class="row justify-content-md-left col-12" style="padding-top: 30px;">
+                <div class="mbr-section-btn align-center"><button class="btn btn-danger display-7" onclick="filterCollection('All')">All</button>
+                </div>
+                <% var validInterests = {}; %> 
+                <% for (var i = 0; i < interests.length; i++) { %>
+                    <% validInterests[interests[i].name] = 1; %>
+                    <div class="mbr-section-btn align-center"><button class="btn btn-danger display-7" onclick="filterCollection('<%= interests[i].name %>')"><%= interests[i].name %></button></div>          
+                <% } %>
+            </div>
+            <% for (var i = 0; i < posts.length; i++) { %>
+                <% var interestClass = ""; %> 
+                <% if (validInterests[posts[i].interest]) { %>
+                    <% interestClass = posts[i].interest; %>
+                <% } %>        
+                <div class="card col-12 col-md-6 col-lg-4 c-item <%= interestClass %>" style="padding: 15px;">
                     <div class="card-inner">
                         <div class="card-img align-left">
                             <% karma = posts[i].likes.length - posts[i].dislikes.length %>
@@ -41,7 +59,7 @@
                                 <%= posts[i].text %>
                             </p>
                             <p class="mbr-author-desc mbr-fonts-style display-4">
-                                <%= posts[i].interest %>
+                                <%= interestClass %>
                             </p>
                             <div class="card-people">
                                 <div class="user_image">
