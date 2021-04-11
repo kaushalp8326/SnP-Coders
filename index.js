@@ -1554,7 +1554,7 @@ app.get("/approve/tag/:id", (req, res) => {
                     if(error){
                         console.log(error);
                     }else{
-                        res.redirect('viewInterestSubmissions');
+                        res.redirect('back');
                     }
                 });
             } else {
@@ -1577,7 +1577,7 @@ app.get("/reject/tag/:id", (req, res) => {
                         console.log(deleteTagError);
                         res.redirect('error');
                     } else {
-                        res.redirect('viewInterestSubmissions');
+                        res.redirect('back');
                     }
                 }));
             } else {
