@@ -1150,6 +1150,37 @@ app.post("/makeAnnouncement",(req,res)=> {
     } 
 });
 
+
+// Interest Page
+app.get('/interest/:interest', (req, res) => {
+    if (req.session.user) {
+        if (req.session.user.isBanned) {
+            res.render('ban', {user: req.session.user, banned: req.session.user});
+        } else {
+            Post.find({isVisible: true, interest: req.params.interest}).exec(function(findPostError, foundPosts) {
+                if (findPostError) {
+                    console.log(findPostError);
+                } else {
+                    authors = []
+                    for (post of foundPosts) {
+                        authors.push(post.author);
+                    }
+                    User.find({$or: [{username:{$in: authors}}, {interest: {$all: [req.params.interest]}}]}).exec(function(findUserError, foundUsers) {
+                        if (findUserError) {
+                            console.log(findUserError);
+                        } else {
+                            res.render('interest', {user: req.session.user, pageInterest: req.params.interest, posts: foundPosts, users: foundUsers});
+                        }
+                    });
+                }
+            });
+        }
+    } else {
+        res.redirect('/');
+    }
+});
+
+
 app.post("/searchPost", (req,res)=>{
    //db.posts.find({$text: {$search: "comment reply"}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}});
    if (req.session.user) {
@@ -1368,7 +1399,7 @@ app.get("/delete/postId/:postId", (req, res) => {
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const postId = req.params.postId;
-            Post.findOne({_id: mongoose.Types.ObjectId(req.body.parentPost)}, function(error, post){
+            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, function(error, post){
                 if (error){
                     console.log(error);
                     res.redirect('error');
@@ -1590,10 +1621,17 @@ app.get("/reject/tag/:id", (req, res) => {
 });
 
 
-// Deprecated?
-// app.get('/delete', (req, res) => {
-//     res.render('delete');
-// });
+app.get("*", (req, res) => {
+    if (req.session.user) {
+        if (req.session.user.isBanned) {
+            res.render('ban', {user: req.session.user, banned: req.session.user});
+        } else {
+            res.render('error', {user: req.session.user});
+        }
+    } else {
+        res.render('error');
+    }
+});
 
 
 // Run Site

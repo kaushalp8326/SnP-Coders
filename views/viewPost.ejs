@@ -35,14 +35,24 @@
                             <% } else { %>
                                 <a href="/dislike/postId/<%= post._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <% } %>
+                            <% if (user.isAdmin) { %>
+                                <a href="/delete/postId/<%= post._id %>" class="far fa-trash-alt" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } else if (post.author == user.username) { %>
+                                <a href="/delete/postId/<%= post._id %>" class="far fa-trash-alt" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } %>
+                            <a href="/viewPost/postId/<%= post._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <a href="/report/postId/<%= post._id %>" class="far fa-flag" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+
                         </div>
                         <div class="card-box">
                             
                             <p class="mbr-text align-left mbr-fonts-style display-7">
                                 <%= post.text %>
                             </p>
-                            <p class="mbr-author-desc mbr-fonts-style display-4">
-                                <%= post.interest %>
+                            <p>
+                                <a href="/interest/<%= post.interest %>" class="mbr-author-desc mbr-fonts-style display-4" style="color: #e9204f;" onmouseout="this.style.color='#e9204f'" onmouseover="this.style.color='#f0ad4e'">
+                                    <%= post.interest %>
+                                </a>
                             </p>
                             <div class="card-people">
                                 <div class="user_image">
