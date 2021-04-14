@@ -135,8 +135,10 @@
                             <p class="mbr-text align-left mbr-fonts-style display-7">
                                 <%= posts[i].text %>
                             </p>
-                            <p class="mbr-author-desc mbr-fonts-style display-4">
-                                <%= interestClass %>
+                            <p>
+                                <a href="/interest/<%= interestClass %>" class="mbr-author-desc mbr-fonts-style display-4" style="color: #e9204f;" onmouseout="this.style.color='#e9204f'" onmouseover="this.style.color='#f0ad4e'">
+                                    <%= interestClass %>
+                                </a>
                             </p>
                             <div class="card-people">
                                 <div class="user_image">

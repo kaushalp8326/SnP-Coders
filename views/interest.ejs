@@ -4,28 +4,73 @@
     <%- include("homeheader") -%>
 <% } %>
 
-<section style="min-height: 55rem;" class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
+<style>
+    .scrolling-wrapper {
+        overflow-x: scroll;
+        overflow-y: hidden;
+        display: flex;
+        width: 100%;
+    }
+
+    .scrolling-wrapper::-webkit-scrollbar{
+        height: 5px;
+        background-color: #747474;
+    }
+
+    .scrolling-wrapper::-webkit-scrollbar-thumb{
+        background-color: #e9204f;
+    }
+
+    .scrolling-wrapper .card {
+        display: table-cell;
+    }
+</style>
+
+<section class="testimonials2 studiom4_testimonials2 vertical-line cid-sq4XL8SNzK" id="testimonials2-j">
 	<div class="container">
 		<div class="row">
 			<div class="title col-12 align-center">
-				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">POPULAR POSTS</h3>
-				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Explore the hottest Posts</h2>
+				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7"><%= pageInterest.toUpperCase() %></h3>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Users interested in <%= pageInterest %></h2>
 			</div>
-            <div class="row justify-content-md-left col-12" style="padding-top: 30px;">
-                <div class="mbr-section-btn align-center"><button class="btn btn-danger display-7" onclick="filterCollection('All')">All</button>
+            <% if (users.length == 0) { %>
+                <p> There are no users interested in <%= pageInterest %>...</p>
+            <% } else { %>
+                <div class="scrolling-wrapper">
+                    <% for (var i = 0; i < users.length; i++) { %>
+                        <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
+                            <div class="card-inner">
+                                <div class="card-box">
+                                    <div class="card-people">
+                                        <div class="user_image">
+                                            <% if (users[i].picture != null) { %>
+                                                <img src="<%= users[i].picture %>" alt="">
+                                            <% } else { %>
+                                                <img src="/assets/images/mbr-455x455.png" alt="">
+                                            <% } %>
+                                        </div>
+                                        <div class="wrapper-name">
+                                            <a href="/profile/<%= users[i].username %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
+                                                <%= users[i].username %>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
                 </div>
-                <% var validInterests = {}; %> 
-                <% for (var i = 0; i < interests.length; i++) { %>
-                    <% validInterests[interests[i].name] = 1; %>
-                    <div class="mbr-section-btn align-center"><button class="btn btn-danger display-7" onclick="filterCollection('<%= interests[i].name %>')"><%= interests[i].name %></button></div>          
-                <% } %>
-            </div>
-            <% for (var i = 0; i < posts.length; i++) { %>
-                <% var interestClass = ""; %> 
-                <% if (validInterests[posts[i].interest]) { %>
-                    <% interestClass = posts[i].interest; %>
-                <% } %>        
-                <div class="card col-12 col-md-6 col-lg-4 c-item <%= interestClass %>" style="padding: 15px;">
+            <% } %>
+            <div class="title col-12 align-center">
+                <br>
+                <br>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Posts about <%= pageInterest %></h2>
+			</div>
+            <% if (posts.length == 0) { %>
+                <p> There are no posts about <%= pageInterest %>...</p>
+            <% } %>
+            <% for (var i = 0; i < posts.length; i++) { %>        
+                <div class="card col-12 col-md-6 col-lg-4" id="8"style="padding: 15px;">
                     <div class="card-inner">
                         <div class="card-img align-left">
                             <% karma = posts[i].likes.length - posts[i].dislikes.length %>
@@ -52,6 +97,8 @@
                                 <a href="/delete/postId/<%= posts[i]._id %>" class="far fa-trash-alt" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <% } else if (posts[i].author == user.username) { %>
                                 <a href="/delete/postId/<%= posts[i]._id %>" class="far fa-trash-alt" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
+                            <% } else if (posts[i].author == user.username) { %>
+                                <a href="/delete/postId/<%= posts[i]._id %>" class="far fa-trash-alt" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <% } %>
                             <a href="/viewPost/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-chat mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <a href="/report/postId/<%= posts[i]._id %>" class="far fa-flag" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
@@ -60,24 +107,19 @@
                             <p class="mbr-text align-left mbr-fonts-style display-7">
                                 <%= posts[i].text %>
                             </p>
-                            <p>
-                                <a href="/interest/<%= interestClass %>" class="mbr-author-desc mbr-fonts-style display-4" style="color: #e9204f;" onmouseout="this.style.color='#e9204f'" onmouseover="this.style.color='#f0ad4e'">
-                                    <%= interestClass %>
-                                </a>
-                            </p>
                             <div class="card-people">
                                 <div class="user_image">
                                     <% userIndex = users.indexOf(users.find(j => j.username === posts[i].author)); %>
                                     <% if (userIndex === -1) { %>
-                                        <img src="assets/images/mbr-455x455.png" alt="">
+                                        <img src="/assets/images/mbr-455x455.png" alt="">
                                     <% } else if (users[userIndex].picture != null) { %>
                                         <img src="<%= users[userIndex].picture %>" alt="">
                                     <% } else { %>
-                                        <img src="assets/images/mbr-455x455.png" alt="">
+                                        <img src="/assets/images/mbr-455x455.png" alt="">
                                     <% } %>
                                 </div>
                                 <div class="wrapper-name">
-                                    <a href="/profile/<%= posts[i].author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
+                                    <a href="/profile/<%= posts[i].author %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e9204f'">
                                         <%= posts[i].author %>
                                     </a>
                                     <div class="mbr-author-desc mbr-fonts-style display-4">
