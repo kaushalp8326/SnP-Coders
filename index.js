@@ -3,8 +3,8 @@ const isImageUrl = require('is-image-url');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const express = require('express');
+const request = require("supertest");
 var session = require('client-sessions');
-
 const app = express();
 const saltRounds = 11;
 const port = 6969;
@@ -18,6 +18,9 @@ app.use(session({
     duration: 30 * 60 * 1000,
     activeDuration: 5 * 60 * 1000,
   }));
+
+module.exports = app;
+
 
 mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', {useNewUrlParser: true, useUnifiedTopology: true});
 

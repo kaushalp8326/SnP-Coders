@@ -4,7 +4,7 @@
   "description": "Software Engineering Group Project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "SnP Coders",
   "license": "ISC",
@@ -16,5 +16,12 @@
     "express": "^4.17.1",
     "is-image-url": "^1.1.8",
     "mongoose": "^5.11.15"
+  },
+  "devDependencies": {
+    "jest": "^26.6.3",
+    "supertest": "^6.1.3"
+  },
+  "jest": {
+    "testEnvironment": "node"
   }
 }
