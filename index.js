@@ -1454,6 +1454,32 @@ app.get("/report/postId/:postId", (req, res) => {
     }
 });
 
+app.get("/ignore/postId/:postId", (req, res) => {
+    if (req.session.user) {
+        if (req.session.user.isBanned) {
+            res.render('ban', {user: req.session.user, banned: req.session.user});
+        } else {
+            const postId = req.params.postId;
+            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(reportPostError, reportPost) {
+                if (reportPostError) {
+                    console.log(reportPostError);
+                } else {
+                    reportPost.isReported=false;
+                    reportPost.save(function(saveError) {
+                        if (saveError) {
+                            console.log(saveError);
+                        } else {
+                            res.redirect('back');
+                        }
+                    });
+                }
+            }));
+        }
+    } else {
+        res.redirect('/');
+    }
+});
+
 
 // Admin Functionalities
 app.get("/viewReportedPosts", (req,res)=>{
