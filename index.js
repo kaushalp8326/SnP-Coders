@@ -122,7 +122,8 @@ app.post("/register", (req, res) => {
                                             if (findPostError) {
                                                 console.log(findPostError);
                                             } else {
-                                                res.render('userPage', {user: req.session.user, posts: foundPosts});
+                                                // res.render('userPage', {user: req.session.user, posts: foundPosts});
+                                                res.redirect('/home');
                                             }
                                         });
                                     }
@@ -1657,7 +1658,7 @@ app.all("*", (req, res) => {
             res.render('error', {user: req.session.user});
         }
     } else {
-        res.render('error');
+        res.status(404).render('error');
     }
 });
 
