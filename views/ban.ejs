@@ -1,4 +1,6 @@
-<% if (user.isAdmin) { %>
+<% if (user === banned) { %>
+	<%- include("header") -%>
+<% } else if (user.isAdmin) { %>
     <%- include("adminheader") -%>
 <% } else { %> 
     <%- include("homeheader") -%>

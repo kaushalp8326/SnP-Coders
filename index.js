@@ -3,7 +3,6 @@ const isImageUrl = require('is-image-url');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const express = require('express');
-const request = require("supertest");
 var session = require('client-sessions');
 const app = express();
 const saltRounds = 11;
@@ -19,7 +18,7 @@ app.use(session({
     activeDuration: 5 * 60 * 1000,
   }));
 
-module.exports = app;
+// module.exports = app;
 
 
 mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', {useNewUrlParser: true, useUnifiedTopology: true});
@@ -176,7 +175,7 @@ app.post("/login", (req,res)=> {
                     } else {
                         if (result === true) {
                             if (foundUser.isBanned) {
-                                res.render('ban', {user: req.session.user, banned: req.session.user});
+                                res.render('ban', {user: foundUser, banned: foundUser});
                             } else {
                                 req.session.user = foundUser;
                                 res.redirect('home');
@@ -1650,7 +1649,7 @@ app.get("/reject/tag/:id", (req, res) => {
 });
 
 
-app.get("*", (req, res) => {
+app.all("*", (req, res) => {
     if (req.session.user) {
         if (req.session.user.isBanned) {
             res.render('ban', {user: req.session.user, banned: req.session.user});
@@ -1665,3 +1664,4 @@ app.get("*", (req, res) => {
 
 // Run Site
 app.listen(port, () => console.log('Node server listening on port 6969!'));
+module.exports = {app: app, mongoose: mongoose};

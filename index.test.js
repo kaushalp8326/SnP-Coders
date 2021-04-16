@@ -1,24 +1,21 @@
-const app = require("./index"); //import file we are testing
-const request = require("supertest"); // supertest is a framework that allows to easily test web apis
+const index = require("./index"); //import file we are testing'
+const app = index.app;
+const mongoose = index.mongoose;
+const request = require('supertest')(app); // supertest is a framework that allows to easily test web apis
 
-
-
-
-test("Logs in a valid user", async () => {
-  await request(app).post('/login')
+test("Logs in a valid user", async (done) => {
+  await request.post('/login')
+  .type('form')
   .send({
       email: "user@rutgers.edu",
       password: "rutgers"
   })
-  .expect(200)
-
+  .expect(302)
+  .expect('Location', /home/)
+  done()
 })
 
-test("Log in an invalid user", async () => {
-  await request(app).post('/login')
-  .send({
-      email: "user123123@rutgers.edu",
-      password: "rutgers1111"
-  })
-  .expect(200)
+afterAll(done => {
+  mongoose.connection.close()
+  done()
 })
