@@ -82,7 +82,23 @@ app.get('/register', (req, res) => {
 app.post("/register", (req, res) => {
     let validEmail = true;
     let validUsername = true;
+    let validPassword = true;
     let registerFail = [];
+
+    if (!/[a-z]/i.test(req.body.email)) {
+        validEmail = false;
+        registerFail.push("Please enter an email.");
+    }
+
+    if (!/[a-z]/i.test(req.body.username)) {
+        validUsername = false;
+        registerFail.push("Please enter a username.");
+    }
+
+    if (!/[a-z]/i.test(req.body.password)) {
+        validPassword = false;
+        registerFail.push("Please enter a password.");
+    }
 
     User.findOne({email: req.body.email}, function(error, foundEmail) {
         if (error) {
@@ -91,6 +107,7 @@ app.post("/register", (req, res) => {
         } else {
             if (foundEmail) {
                 validEmail = false;
+                registerFail.push("Email is already taken.");
             }
             User.findOne({username: req.body.username}, function(erro, foundUser) {
                 if (erro) {
@@ -99,8 +116,9 @@ app.post("/register", (req, res) => {
                 } else {
                     if (foundUser) {
                         validUsername = false;
+                        registerFail.push("Username is already taken.");
                     }
-                    if (validEmail && validUsername) {
+                    if (validEmail && validUsername && validPassword) {
                         bcrypt.hash(req.body.password, saltRounds, function(hashError, hash){
                             if (hashError) {
                                 console.log(hashError);
@@ -131,13 +149,7 @@ app.post("/register", (req, res) => {
                             } 
                         });
                     } else {
-                        if (!validEmail) {
-                            registerFail.push("Email is already taken.");
-                        }
-                        if (!validUsername) {
-                            registerFail.push("Username is already taken.");
-                        }
-                        res.render("register", {registerFail: registerFail});
+                        res.status(406).render("register", {registerFail: registerFail});
                     }
                 }
             });
@@ -1666,5 +1678,5 @@ app.all("*", (req, res) => {
 
 
 // Run Site
-app.listen(port, () => console.log('Node server listening on port 6969!'));
+// app.listen(port, () => console.log('Node server listening on port 6969!'));
 module.exports = {app: app, mongoose: mongoose, User: User, Post: Post, Interest: Interest};
