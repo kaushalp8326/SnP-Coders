@@ -241,27 +241,11 @@ app.get('/profile', function (req, res) {
         if (req.session.user.isBanned) {
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            Post.find({author: req.session.user.username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
-                if (findPostError) {
-                    console.log(findPostError);
-                    res.redirect('error');
-                } else {
-                    Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
-                        if (findInterestError) {
-                            res.redirect('error');
-                        } else {
-                            if (foundInterests) {
-                                res.render('userPage', {user: req.session.user, posts: foundPosts, interests: foundInterests});
-                            }
-                        }
-                    });
-                }
-            });
+            res.redirect('/profile/' + req.session.user.username);
         }
     } else {
         res.redirect('/');
     }
-    
 });
 
 app.get('/profile/:profile', (req, res) => {
@@ -271,7 +255,22 @@ app.get('/profile/:profile', (req, res) => {
         } else {
             const username = req.params.profile;
             if (req.params.profile == req.session.user.username) {
-                res.redirect('/profile');
+                Post.find({author: req.session.user.username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                    if (findPostError) {
+                        console.log(findPostError);
+                        res.redirect('error');
+                    } else {
+                        Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
+                            if (findInterestError) {
+                                res.redirect('error');
+                            } else {
+                                if (foundInterests) {
+                                    res.render('userPage', {user: req.session.user, posts: foundPosts, interests: foundInterests});
+                                }
+                            }
+                        });
+                    }
+                });
             } else {
                 User.findOne({username: username}, function(error, foundUser) {
                     if (error) {
@@ -290,7 +289,7 @@ app.get('/profile/:profile', (req, res) => {
                                                 if (foundUser.isBanned) {
                                                     res.render('ban', {user: req.session.user, banned: foundUser});
                                                 } else {
-                                                    res.render('profile', {user: foundUser, posts: foundPosts, local: req.session.user, interests: foundInterests});
+                                                    res.render('profile', {user: req.session.user, profileUser: foundUser, posts: foundPosts, interests: foundInterests});
                                                 }
                                             }
                                         }
@@ -569,7 +568,7 @@ app.get('/followers/:username', (req, res) => {
                 if (error) {
                     console.log(error);
                 } else {
-                    res.render('followers', {user: foundUser, local: req.session.user});
+                    res.render('followers', {user: req.session.user, profileUser: foundUser});
                 }
             });
         }
@@ -588,7 +587,7 @@ app.get('/following/:username', (req, res) => {
                 if (error) {
                     console.log(error);
                 } else {
-                    res.render('following', {user: foundUser, local: req.session.user});
+                    res.render('following', {user: req.session.user, profileUser: foundUser});
                 }
             });
         }
@@ -689,17 +688,19 @@ app.get("/unfollow/username/:username", (req, res) => {
 
 
 // Post Interactions
-app.get('/makePost', function (req, res) {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
-            res.render('ban', {user: req.session.user, banned: req.session.user});
-        } else {
-            res.redirect("profile");
-        }
-    } else {
-        res.redirect('/');
-    }
-});
+
+// REDUNDANT FUNCTION
+// app.get('/makePost', function (req, res) {
+//     if (req.session.user) {
+//         if (req.session.user.isBanned) {
+//             res.render('ban', {user: req.session.user, banned: req.session.user});
+//         } else {
+//             res.redirect("profile");
+//         }
+//     } else {
+//         res.redirect('/');
+//     }
+// });
 
 app.post("/makePost",(req,res)=> {
     if (req.session.user) {
@@ -1226,27 +1227,28 @@ app.get("/viewPost/postId/:postId", (req,res)=>{
     
 });
 
-app.post('/viewPost', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
-            res.render('ban', {user: req.session.user, banned: req.session.user});
-        } else {
-            const user = req.body.user;
-            const postId = req.body.postId; 
-            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, function(findPostError, foundPost) {
-                if (findPostError) {
-                    console.log(findPostError);
-                } else {
-                    if (foundPost) {
-                        res.render('post', {postJSON: foundPost, user: user});
-                    }
-                }  
-            });
-        }
-    } else {
-        res.redirect('/');
-    }
-});
+// Deprecated?
+// app.post('/viewPost', (req, res) => {
+//     if (req.session.user) {
+//         if (req.session.user.isBanned) {
+//             res.render('ban', {user: req.session.user, banned: req.session.user});
+//         } else {
+//             const user = req.body.user;
+//             const postId = req.body.postId; 
+//             Post.findOne({_id: mongoose.Types.ObjectId(postId)}, function(findPostError, foundPost) {
+//                 if (findPostError) {
+//                     console.log(findPostError);
+//                 } else {
+//                     if (foundPost) {
+//                         res.render('post', {postJSON: foundPost, user: user});
+//                     }
+//                 }  
+//             });
+//         }
+//     } else {
+//         res.redirect('/');
+//     }
+// });
 
 app.get("/like/postId/:postId", (req, res) => {
     if (req.session.user) {
@@ -1665,4 +1667,4 @@ app.all("*", (req, res) => {
 
 // Run Site
 app.listen(port, () => console.log('Node server listening on port 6969!'));
-module.exports = {app: app, mongoose: mongoose};
+module.exports = {app: app, mongoose: mongoose, User: User, Post: Post, Interest: Interest};

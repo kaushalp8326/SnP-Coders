@@ -1,4 +1,4 @@
-<% if (local.isAdmin) { %>
+<% if (user.isAdmin) { %>
     <%- include("adminheader") -%>
 <% } else { %> 
     <%- include("homeheader") -%>
@@ -13,16 +13,16 @@
     <div class="container align-center">
         <div class="row justify-content-md-center">
             <div class="mbr-white col-md-12 col-lg-12">
-                <h1 class="mbr-section-title mbr-semibold pb-3 mbr-fonts-style align-center display-2"><%= user.username %>'s Profile</h1>
+                <h1 class="mbr-section-title mbr-semibold pb-3 mbr-fonts-style align-center display-2"><%= profileUser.username %>'s Profile</h1>
                 
-                <p class="mbr-text mbr-fonts-style align-center display-5"><%= user.bio %><br></p>    
-                <% if (local.following.includes(user.username)) { %>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/unfollow/username/<%= user.username %>" onmouseout="this.innerText='Following'" onmouseover="this.innerText='Unfollow'">Following</a></div>
+                <p class="mbr-text mbr-fonts-style align-center display-5"><%= profileUser.bio %><br></p>    
+                <% if (user.following.includes(profileUser.username)) { %>
+                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/unfollow/username/<%= profileUser.username %>" onmouseout="this.innerText='Following'" onmouseover="this.innerText='Unfollow'">Following</a></div>
                 <% } else { %>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/follow/username/<%= user.username %>">Follow</a></div>
+                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/follow/username/<%= profileUser.username %>">Follow</a></div>
                 <% } %>
-                <% if (local.isAdmin === true) { %>
-                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/ban/username/<%= user.username %>">Ban</a></div>
+                <% if (user.isAdmin === true) { %>
+                    <div class="mbr-section-btn align-center"><a class="btn btn-danger display-7" style="margin-right: 0;" href="/ban/username/<%= profileUser.username %>">Ban</a></div>
                 <% } %>
             </div>
         </div>
@@ -39,10 +39,10 @@
         <div class="row">
             <div class="card col-12 col-md-6">
                 <div class="card-box">
-                    <a href="/followers/<%= user.username %>" class="text-white mbr-bold">
+                    <a href="/followers/<%= profileUser.username %>" class="text-white mbr-bold">
                         <h4 class="card-title align-center mbr-fonts-style display-5">Followers&nbsp;<br>
                             <span class="mbr-regular">
-                                <%= user.followers.length %>
+                                <%= profileUser.followers.length %>
                             </span>
                         </h4>
                     </a>
@@ -50,10 +50,10 @@
             </div>
             <div class="card col-12 col-md-6">
                 <div class="card-box">
-                    <a href="/following/<%= user.username %>" class="text-white mbr-bold">
+                    <a href="/following/<%= profileUser.username %>" class="text-white mbr-bold">
                         <h4 class="card-title align-center mbr-fonts-style display-5">Following&nbsp;<br>
                             <span class="mbr-regular">
-                                <%= user.following.length %>
+                                <%= profileUser.following.length %>
                             </span>
                         </h4>
                     </a>
@@ -78,9 +78,9 @@
                 <% for (var i = 0; i < interests.length; i++) { %>
                     <% validInterests[interests[i].name] = 1; %>
                 <% } %>
-                <% for (var i = 0; i < user.interests.length; i++) { %>
-                    <% if (validInterests[user.interests[i]]) { %>
-                        <div class="mbr-section-btn align-center"><button class="btn btn-danger display-7" onclick="filterCollection('<%= user.interests[i] %>')"><%= user.interests[i] %></button></div>  
+                <% for (var i = 0; i < profileUser.interests.length; i++) { %>
+                    <% if (validInterests[profileUser.interests[i]]) { %>
+                        <div class="mbr-section-btn align-center"><button class="btn btn-danger display-7" onclick="filterCollection('<%= profileUser.interests[i] %>')"><%= profileUser.interests[i] %></button></div>  
                     <% } %> 
                 <% } %>
             </div>
@@ -102,12 +102,12 @@
                             <% } else { %>
                                 <span style="color: #f0ad4e; padding-right: 15px"><%= karma %></span>
                             <% } %>
-                            <% if (posts[i].likes.includes(local.username)) { %>
+                            <% if (posts[i].likes.includes(user.username)) { %>
                                 <a href="/unlike/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
                             <% } else { %>
                                 <a href="/like/postId/<%= posts[i]._id %>" class="mbr-iconfont mbr-iconfont-1 mobi-mbri-like mobi-mbri" style="padding-right: 15px;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
                             <% } %>
-                            <% if (posts[i].dislikes.includes(local.username)) { %>
+                            <% if (posts[i].dislikes.includes(user.username)) { %>
                                 <a href="/undislike/postId/<%= posts[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#e1201d;" onmouseover="this.style.color='#f0ad4e'" onmouseout="this.style.color='#e1201d'"></a>
                             <% } else { %>
                                 <a href="/dislike/postId/<%= posts[i]._id %>" class="far fa-thumbs-down" style="padding-right: 15px;color:#f0ad4e;" onmouseout="this.style.color='#f0ad4e'" onmouseover="this.style.color='#e1201d'"></a>
@@ -127,8 +127,8 @@
                             </p>
                             <div class="card-people">
                                 <div class="user_image">
-                                    <% if (user.picture != null) { %>
-                                        <img src="<%= user.picture %>" alt="">
+                                    <% if (profileUser.picture != null) { %>
+                                        <img src="<%= profileUser.picture %>" alt="">
                                     <% } else { %>
                                         <img src="/assets/images/mbr-455x455.png" alt="">
                                     <% } %>

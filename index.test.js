@@ -3,6 +3,9 @@ const should = require('should');
 const app = index.app;
 const mongoose = index.mongoose;
 const request = require('supertest')(app); // supertest is a framework that allows to easily test web apis
+const User = index.User;
+const Post = index.Post;
+const Interest = index.Interest;
 
 describe('User session', () => {
 
@@ -89,7 +92,7 @@ describe('User session', () => {
     await req
     .expect(200)
     // .then ((response) => {
-    //   response.text.should.match(/"\/profile\/jest">Profile/);
+    //   response.text.should.match(/We will be banning all users who are not cool/);
     // })
     done()
   })
@@ -171,7 +174,7 @@ describe('User session', () => {
         bio: "I am a test user",
     })
     .expect(302)
-    .expect('Location', /profile\/jest/)
+    .expect('Location', /profile/)
     done()
   })
 
@@ -205,6 +208,13 @@ describe('User session', () => {
     .expect(302)
     .expect('Location', /profile/)
     done()
+  })
+
+  it('Check for post', async(done) => {
+    Post.findOne({author: "jest", text: "Testing a new posts on this site", interest: "Soccer"} , function(error, foundPost) {
+      expect(foundPost).not.toBeNull();
+      done()
+    })
   })
 
   it('page does not exist', async(done) => {

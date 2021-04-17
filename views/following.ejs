@@ -1,4 +1,4 @@
-<% if (local.isAdmin) { %>
+<% if (user.isAdmin) { %>
     <%- include("adminheader") -%>
 <% } else { %> 
     <%- include("homeheader") -%>
@@ -9,9 +9,9 @@
 		<div class="row">
 			<div class="title col-12 align-center">
 				<h3 class="mbr-section-subtitle mbr-bold mbr-fonts-style display-7">FOLLOWING</h3>
-				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Here are all the Users that <%= user.username %> follows</h2>
+				<h2 class="mbr-bold mbr-fonts-style mbr-section-title mbr-white display-2">Here are all the Users that <%= profileUser.username %> follows</h2>
 			</div>
-            <% for (var i = 0; i < user.following.length; i++) { %>        
+            <% for (var i = 0; i < profileUser.following.length; i++) { %>        
                 <div class="card col-12 col-md-6 col-lg-4" style="padding: 15px;">
                     <div class="card-inner">
                         <div class="card-box">
@@ -20,8 +20,8 @@
                                     <img src="/assets/images/mbr-455x455.png" alt="">
                                 </div>
                                 <div class="wrapper-name">
-                                    <a href="/profile/<%= user.following[i] %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
-                                        <%= user.following[i] %>
+                                    <a href="/profile/<%= profileUser.following[i] %>" class="mbr-author-name mbr-semibold mbr-fonts-style mbr-white display-7" style="color: #fff;" onmouseout="this.style.color='#fff'" onmouseover="this.style.color='#e1201d'">
+                                        <%= profileUser.following[i] %>
                                     </a>
                                 </div>
                             </div>
