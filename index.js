@@ -270,11 +270,11 @@ app.get('/profile/:profile', (req, res) => {
                 Post.find({author: req.session.user.username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
                     if (findPostError) {
                         console.log(findPostError);
-                        res.redirect('error');
+                        res.redirect('../error');
                     } else {
                         Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
                             if (findInterestError) {
-                                res.redirect('error');
+                                res.redirect('../error');
                             } else {
                                 if (foundInterests) {
                                     res.render('userPage', {user: req.session.user, posts: foundPosts, interests: foundInterests});
@@ -287,7 +287,11 @@ app.get('/profile/:profile', (req, res) => {
                 User.findOne({username: username}, function(error, foundUser) {
                     if (error) {
                         console.log(error);
+                        res.redirect('../error');
                     } else {
+                        if(foundUser == null){
+                            res.redirect('../error');
+                        }
                         Post.find({author: username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
                             if (findPostError) {
                                 console.log(findPostError);
@@ -295,7 +299,7 @@ app.get('/profile/:profile', (req, res) => {
                                 if (foundUser) {
                                     Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
                                         if (findInterestError) {
-                                            res.redirect('error');
+                                            res.redirect('../error');
                                         } else {
                                             if (foundInterests) {
                                                 if (foundUser.isBanned) {

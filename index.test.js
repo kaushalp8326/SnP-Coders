@@ -230,6 +230,55 @@ describe('User session', () => {
     .expect(200)
     done()
   })
+  it("get other user's profile information", async(done) => {
+    var req = request.get('/profile/user')
+    req.cookies = this.Cookies;
+    await req
+    .expect(200)
+    .then ((response) => {
+      response.text.should.match(/user's Profile/);
+      response.text.should.match(/Rutgers 2022/);
+      response.text.should.match(/Followers.*3/su);
+      response.text.should.match(/Following.*1/su);
+
+    })
+    done()
+  })
+  it("get non-existent user's profile information", async(done) => {
+    var req = request.get('/profile/user234234')
+    req.cookies = this.Cookies;
+    await req
+    .expect(302)
+    .expect('Location',/error/)
+    done()
+  })
+
+  it("get banned user's profile information", async(done) => {
+    var req = request.get('/profile/username')
+    req.cookies = this.Cookies;
+    await req
+    .expect(200)
+    .then ((response) => {
+      response.text.should.match(/User is currently banned./);
+
+    })
+    done()
+  })
+
+  it("get explore page", async(done) => {
+    var req = request.get('/explore')
+    req.cookies = this.Cookies;
+    await req
+    .expect(200)
+    done()
+  })
+  it("get popular page", async(done) => {
+    var req = request.get('/popular')
+    req.cookies = this.Cookies;
+    await req
+    .expect(200)
+    done()
+  })
 })
 
 afterAll(done => {
