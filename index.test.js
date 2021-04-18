@@ -9,6 +9,60 @@ const Interest = index.Interest;
 
 // /like/postId/607c7801f13d0f9d4c5d23b2
 
+describe('OU-01-01', () => {
+    it('Login', async(done) => {
+        await request.post('/login')
+        .type('form')
+        .send({
+            email: "jest@gmail.com",
+            password: "jesttest"
+        })
+        .expect(302)
+        .expect('Location', /home/)
+        .then ((response) => {
+            this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+        });
+        done();
+    });
+
+    it("Check timeline", async(done) => {
+        var req = request.get('/home')
+        req.cookies = this.Cookies;
+        await req
+        .expect(200)
+        .then ((response) => {
+            User.findOne({username: "jest"}, function(error, foundUser) {
+                if (error) {
+                    console.log(error);
+                    done();
+                } else {
+                    Post.find({isVisible: true, author: {$in: foundUser.following}}).exec(function (findPostError, foundPosts) {
+                        if (findPostError) {
+                            console.log(findPostError);
+                            done();
+                        } else {
+                            if (foundPosts) {
+                                for (let post of foundPosts) {
+                                    expect(response.text.includes(post._id)).toBe(true);
+                                }
+                            }
+                            done();
+                        }
+                    })
+                }
+            });
+    
+        });
+    });
+    
+    it('Log out', async(done) => {
+        await request.get('/logout')
+        .expect(302)
+        .expect('Location', /login/);
+        done();
+    });
+});
+
 describe('PR-01-01', () => {
     
     it('Like post without login', async(done) => {
@@ -177,6 +231,13 @@ describe('PR-01-01', () => {
             done();
         })
     });
+
+    it('Log out', async(done) => {
+        await request.get('/logout')
+        .expect(302)
+        .expect('Location', /login/);
+        done();
+    });
 });
 
 describe('User session', () => {
@@ -228,9 +289,9 @@ describe('User session', () => {
   it('Log out', async(done) => {
     await request.get('/logout')
     .expect(302)
-    .expect('Location', /login/)
-    done()
-  })
+    .expect('Location', /login/);
+    done();
+  });
 
   it('Login', async(done) => {
     await request.post('/login')
