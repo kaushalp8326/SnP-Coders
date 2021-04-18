@@ -7,6 +7,178 @@ const User = index.User;
 const Post = index.Post;
 const Interest = index.Interest;
 
+// /like/postId/607c7801f13d0f9d4c5d23b2
+
+describe('PR-01-01', () => {
+    
+    it('Like post without login', async(done) => {
+        await request.get('/like/postId/607c7801f13d0f9d4c5d23b2')
+        .expect(401);
+        done();
+    });
+
+    it('Dislike post without login', async(done) => {
+        await request.get('/dislike/postId/607c7801f13d0f9d4c5d23b2')
+        .expect(401);
+        done();
+    });
+
+    it('Unlike post without login', async(done) => {
+        await request.get('/unlike/postId/607c7801f13d0f9d4c5d23b2')
+        .expect(401);
+        done();
+    });
+
+    it('Undislike post without login', async(done) => {
+        await request.get('/undislike/postId/607c7801f13d0f9d4c5d23b2')
+        .expect(401);
+        done();
+    });
+
+    it('Login', async(done) => {
+        await request.post('/login')
+        .type('form')
+        .send({
+            email: "jest@gmail.com",
+            password: "jesttest"
+        })
+        .expect(302)
+        .expect('Location', /home/)
+        .then ((response) => {
+            this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+        });
+        done();
+    });
+
+    it('Like with invalid post', async(done) => {
+        var req = request.get('/like/postId/assssddadadaad');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(400);
+        done();
+    });
+
+    it('Dislike with invalid post', async(done) => {
+        var req = request.get('/dislike/postId/assssddadadaad');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(400);
+        done();
+    });
+
+    it('Unlike with invalid post', async(done) => {
+        var req = request.get('/unlike/postId/assssddadadaad');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(400);
+        done();
+    });
+
+    it('Undislike with invalid post', async(done) => {
+        var req = request.get('/undislike/postId/assssddadadaad');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(400);
+        done();
+    });
+
+    it('Like post', async(done) => {
+        var req = request.get('/like/postId/607c7801f13d0f9d4c5d23b2');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(302);
+        done();
+    });
+
+    it('Check if karma updated after like', async(done) => {
+        Post.findOne({_id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2')}, function(findPostError, foundPost) {
+            if (findPostError) {
+                console.log(findPostError);
+            } else {
+                if (foundPost) {
+                    expect(foundPost.likes.includes('jest')).toBe(true);
+                    expect(foundPost.dislikes.includes('jest')).toBe(false);
+                }
+            }
+            done();
+        })
+    });
+
+    it('Dislike post', async(done) => {
+        var req = request.get('/dislike/postId/607c7801f13d0f9d4c5d23b2');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(302);
+        done();
+    });
+
+    it('Check if karma updated after dislike', async(done) => {
+        Post.findOne({_id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2')}, function(findPostError, foundPost) {
+            if (findPostError) {
+                console.log(findPostError);
+            } else {
+                if (foundPost) {
+                    expect(foundPost.likes.includes('jest')).toBe(false);
+                    expect(foundPost.dislikes.includes('jest')).toBe(true);
+                }
+            }
+            done();
+        })
+    });
+
+    it('Unlike post', async(done) => {
+        var req = request.get('/like/postId/607c7801f13d0f9d4c5d23b2');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(302);
+
+        req = request.get('/unlike/postId/607c7801f13d0f9d4c5d23b2');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(302);
+        done();
+    });
+
+    it('Check if karma updated after unlike', async(done) => {
+        Post.findOne({_id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2')}, function(findPostError, foundPost) {
+            if (findPostError) {
+                console.log(findPostError);
+            } else {
+                if (foundPost) {
+                    expect(foundPost.likes.includes('jest')).toBe(false);
+                }
+            }
+            done();
+        })
+    });
+
+    it('Undislike post', async(done) => {
+        var req = request.get('/dislike/postId/607c7801f13d0f9d4c5d23b2');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(302);
+        
+        req = request.get('/undislike/postId/607c7801f13d0f9d4c5d23b2');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(302);
+        done();
+    });
+
+    it('Check if karma updated after undislike', async(done) => {
+        Post.findOne({_id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2')}, function(findPostError, foundPost) {
+            if (findPostError) {
+                console.log(findPostError);
+            } else {
+                if (foundPost) {
+                    expect(foundPost.dislikes.includes('jest')).toBe(false);
+                }
+            }
+            done();
+        })
+    });
+});
+
 describe('User session', () => {
 
   it('Ribbet landing page', async(done) => {
@@ -194,28 +366,28 @@ describe('User session', () => {
     done()
   })
 
-  it('Make post', async(done) => {
-    var req = request.post('/makePost')
-    req.cookies = this.Cookies;
-    await req
-    .type('form')
-    .send({
-        username: "jest",
-        postContent: "Testing a new posts on this site",
-        interest: "Soccer",
-        addInterest: "testing"
-    })
-    .expect(302)
-    .expect('Location', /profile/)
-    done()
-  })
+//   it('Make post', async(done) => {
+//     var req = request.post('/makePost')
+//     req.cookies = this.Cookies;
+//     await req
+//     .type('form')
+//     .send({
+//         username: "jest",
+//         postContent: "Testing a new posts on this site",
+//         interest: "Soccer",
+//         addInterest: "testing"
+//     })
+//     .expect(302)
+//     .expect('Location', /profile/)
+//     done()
+//   })
 
-  it('Check for post', async(done) => {
-    Post.findOne({author: "jest", text: "Testing a new posts on this site", interest: "Soccer"} , function(error, foundPost) {
-      expect(foundPost).not.toBeNull();
-      done()
-    })
-  })
+//   it('Check for post', async(done) => {
+//     Post.findOne({author: "jest", text: "Testing a new posts on this site", interest: "Soccer"} , function(error, foundPost) {
+//       expect(foundPost).not.toBeNull();
+//       done()
+//     })
+//   })
 
   it('page does not exist', async(done) => {
     await request.get('/sdgdsfgdsfgdsf')

@@ -1269,115 +1269,147 @@ app.get("/viewPost/postId/:postId", (req,res)=>{
 app.get("/like/postId/:postId", (req, res) => {
     if (req.session.user) {
         if (req.session.user.isBanned) {
-            res.render('ban', {user: req.session.user, banned: req.session.user});
+            res.status(403).render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const user = req.session.user.username;
             const postId = req.params.postId;
-            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
-                if (findPostError) {
-                    console.log(findPostError);
-                } else {
-                    if (foundPost.dislikes.includes(user)) {
-                        foundPost.dislikes.remove(user);
-                    }
-                    if (!foundPost.likes.includes(user)) {
-                        foundPost.likes.push(user);
-                    }
-                    foundPost.save(function(saveError) {
-                        if (saveError) {
-                            console.log(saveError);
-                        } else {
-                            res.redirect('back');
+            if (!mongoose.Types.ObjectId.isValid(postId)) {
+                res.status(400).render('error', {user: req.session.user});
+            } else {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+                    if (findPostError) {
+                        console.log(findPostError);
+                        res.status(500).render('error', {user: req.session.user});
+                    } else {
+                        if (foundPost.dislikes.includes(user)) {
+                            foundPost.dislikes.remove(user);
                         }
-                    });
-                }
-            }));
+                        if (!foundPost.likes.includes(user)) {
+                            foundPost.likes.push(user);
+                        }
+                        foundPost.save(function(saveError) {
+                            if (saveError) {
+                                console.log(saveError);
+                                res.status(500).render('error', {user: req.session.user});
+                            } else {
+                                res.redirect('back');
+                            }
+                        });
+                    }
+                }));
+            }
         }
     } else {
-        res.redirect('/');
+        res.status(401).render('error');
     }
 });
 
 app.get("/unlike/postId/:postId", (req, res) => {
     if (req.session.user) {
         if (req.session.user.isBanned) {
-            res.render('ban', {user: req.session.user, banned: req.session.user});
+            res.status(403).render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const user = req.session.user.username;
             const postId = req.params.postId;
-            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
-                if (findPostError) {
-                    console.log(findPostError);
-                } else {
-                    if (foundPost.likes.includes(user)) {
-                        foundPost.likes.remove(user);
-                    }
-                    foundPost.save(function(saveError) {
-                        if (saveError) {
-                            console.log(saveError);
-                        } else {
-                            res.redirect('back');
+            if (!mongoose.Types.ObjectId.isValid(postId)) {
+                res.status(400).render('error', {user: req.session.user});
+            } else {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+                    if (findPostError) {
+                        console.log(findPostError);
+                        res.status(500).render('error', {user: req.session.user});
+                    } else {
+                        if (foundPost.likes.includes(user)) {
+                            foundPost.likes.remove(user);
                         }
-                    });
-                }
-            }));
+                        foundPost.save(function(saveError) {
+                            if (saveError) {
+                                console.log(saveError);
+                                res.status(500).render('error', {user: req.session.user});
+                            } else {
+                                res.redirect('back');
+                            }
+                        });
+                    }
+                }));
+            }
         }
     } else {
-        res.redirect('/');
+        res.status(401).render('error');
     }
 });
 
 app.get("/dislike/postId/:postId", (req, res) => {
     if (req.session.user) {
         if (req.session.user.isBanned) {
-            res.render('ban', {user: req.session.user, banned: req.session.user});
+            res.status(403).render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const user = req.session.user.username;
             const postId = req.params.postId;
-            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
-                if (findPostError) {
-                    console.log(findPostError);
-                } else {
-                    if (foundPost.likes.includes(user)) {
-                        foundPost.likes.remove(user);
-                    }
-                    if (!foundPost.dislikes.includes(user)) {
-                        foundPost.dislikes.push(user);
-                    }
-                    foundPost.save(function(saveError) {
-                        if (saveError) {
-                            console.log(saveError);
-                        } else {
-                            res.redirect('back');
+            if (!mongoose.Types.ObjectId.isValid(postId)) {
+                res.status(400).render('error', {user: req.session.user});
+            } else {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+                    if (findPostError) {
+                        console.log(findPostError);
+                        res.status(500).render('error', {user: req.session.user});
+                    } else {
+                        if (foundPost.likes.includes(user)) {
+                            foundPost.likes.remove(user);
                         }
-                    });
-                }
-            }));
+                        if (!foundPost.dislikes.includes(user)) {
+                            foundPost.dislikes.push(user);
+                        }
+                        foundPost.save(function(saveError) {
+                            if (saveError) {
+                                console.log(saveError);
+                                res.status(500).render('error', {user: req.session.user});
+                            } else {
+                                res.redirect('back');
+                            }
+                        });
+                    }
+                }));    
+            }
         }
     } else {
-        res.redirect('/');
+        res.status(401).render('error');
     }
 });
 
 app.get("/undislike/postId/:postId", (req, res) => {
-    const user = req.session.user.username;
-    const postId = req.params.postId;
-    Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
-        if (findPostError) {
-            console.log(findPostError);
+    if (req.session.user) {
+        if (req.session.user.isBanned) {
+            res.status(403).render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            if (foundPost.dislikes.includes(user)) {
-                foundPost.dislikes.remove(user);
+            const user = req.session.user.username;
+            const postId = req.params.postId;
+            if (!mongoose.Types.ObjectId.isValid(postId)) {
+                res.status(400).render('error', {user: req.session.user});
+            } else {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+                    if (findPostError) {
+                        console.log(findPostError);
+                        res.status(500).render('error', {user: req.session.user});
+                    } else {
+                        if (foundPost.dislikes.includes(user)) {
+                            foundPost.dislikes.remove(user);
+                        }
+                        foundPost.save(function(saveError) {
+                            if (saveError) {
+                                console.log(saveError);
+                                res.status(500).render('error', {user: req.session.user});
+                            } else {
+                                res.redirect('back');
+                            }
+                        });
+                    }
+                }));
             }
-            foundPost.save(function(saveError) {
-                if (saveError) {
-                    console.log(saveError);
-                } else {
-                    res.redirect('back');
-                }
-            });
         }
-    }));
+    } else {
+        res.status(401).render('error');
+    }
 });
 
 app.post("/makeComment", (req,res)=>{
