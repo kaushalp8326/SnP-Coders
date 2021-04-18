@@ -231,14 +231,14 @@ describe('User session', () => {
     done()
   })
   it("get other user's profile information", async(done) => {
-    var req = request.get('/profile/user')
+    var req = request.get('/profile/allen')
     req.cookies = this.Cookies;
     await req
     .expect(200)
     .then ((response) => {
-      response.text.should.match(/user's Profile/);
-      response.text.should.match(/Rutgers 2022/);
-      response.text.should.match(/Followers.*3/su);
+      response.text.should.match(/allen's Profile/);
+      response.text.should.match(/Rutgers 2022 CS/);
+      response.text.should.match(/Followers.*1/su);
       response.text.should.match(/Following.*1/su);
 
     })
