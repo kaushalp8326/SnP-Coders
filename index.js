@@ -647,6 +647,8 @@ app.get("/follow/username/:username", (req, res) => {
                                         });
                                     }
                                 });
+                            } else {
+                                res.redirect('back');
                             }
                         }
                     }
@@ -691,6 +693,8 @@ app.get("/unfollow/username/:username", (req, res) => {
                                         });
                                     }
                                 });
+                            } else {
+                                res.redirect('back');
                             }
                         }
                     }
@@ -1568,7 +1572,7 @@ app.get("/viewBannedUsers", (req, res)=> {
                     if (findPostError) {
                         console.log(findPostError);
                     } else {
-                        res.render('bannedUsers', {users: foundUsers});
+                        res.render('bannedUsers', {user: req.session.user, users: foundUsers});
                     }
                 });
             } else {
@@ -1653,7 +1657,7 @@ app.get("/viewInterestSubmissions", (req,res)=>{
         if(error){
             console.log(error);
         }else{
-            res.render('viewInterestSubmissions', {tags: foundTags});
+            res.render('viewInterestSubmissions', {user: req.session.user, tags: foundTags});
         }
     });
 });

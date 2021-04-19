@@ -12,7 +12,7 @@
 			</div>
             <% if (user.isAdmin) { %>
                 <div class="card col-12">
-                    <form class="card-inner" style="padding-bottom: 2.3rem;" action="/makePost" method="POST">
+                    <form class="card-inner" style="padding-bottom: 2.3rem;" action="/makeAnnouncement" method="POST">
                         <input type="hidden" name="username" id="username" value = "<%= user.username %>">
                         <textarea required="required" name="postContent" class="mbr-text align-left mbr-fonts-style display-7" placeholder="Your Announcement Here" style="width: 100%; background-color: transparent;"></textarea>
                         <select required="required" name="interest" class="mbr-text align-left mbr-fonts-style display-7" onchange="var val=this.options[this.selectedIndex].value; this.form.addInterest.style.display=(val=='Other')?'block':'none'" style="width: 100%; background-color: transparent;">
