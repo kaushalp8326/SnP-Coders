@@ -732,6 +732,200 @@ describe('PR-01-01', () => {
 
 });
 
+describe('T08', () => {
+
+    it('Login admin', async (done) => {
+        await request.post('/login')
+            .type('form')
+            .send({
+                email: "jestAdmin@gmail.com",
+                password: "jestAdmin"
+            })
+            .expect(302)
+            .expect('Location', /home/)
+            .then((response) => {
+                this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+            })
+        done()
+    });
+
+    it('Admin bans user', async (done) => {
+        var req = request.get('/ban/username/jestBan');
+        req.cookies = this.Cookies;
+        await req
+            .expect(302);
+        User.findOne({username: "jestBan"}, function(error, foundUser) {
+            if(error){
+                console.log(error);
+            }else{
+                expect(foundUser.isBanned).toBe(true);
+            }
+        });
+        done();
+    });
+
+    it('Admin unbans user', async (done) => {
+        var req = request.get('/unban/username/jestBan');
+        req.cookies = this.Cookies;
+        await req
+            .expect(302);
+        User.findOne({username: "jestBan"}, function(error, foundUser) {
+            if(error){
+                console.log(error);
+            }else{
+                expect(foundUser.isBanned).toBe(false);
+            }
+        });
+        done();
+    });
+
+    it('Log out', async (done) => {
+        await request.get('/logout')
+            .expect(302)
+            .expect('Location', /login/);
+        done();
+    });
+
+    it('Login regular user', async (done) => {
+        await request.post('/login')
+            .type('form')
+            .send({
+                email: "jest@gmail.com",
+                password: "jesttest"
+            })
+            .expect(302)
+            .expect('Location', /home/)
+            .then((response) => {
+                this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+            })
+        done()
+    });
+
+    it('Regular user attempts to ban user', async (done) => {
+        var req = request.get('/ban/username/jestBan');
+        req.cookies = this.Cookies;
+        await req
+            .expect(403);
+        done();
+    });
+
+    it('Regular user attempts to unban user', async (done) => {
+        var req = request.get('/ban/username/jestBan');
+        req.cookies = this.Cookies;
+        await req
+            .expect(403);
+        done();
+    });
+
+    it('Log out', async (done) => {
+        await request.get('/logout')
+            .expect(302)
+            .expect('Location', /login/);
+        done();
+    });
+
+});
+
+describe('T09', () => {
+
+    it('Login', async (done) => {
+        await request.post('/login')
+            .type('form')
+            .send({
+                email: "jest@gmail.com",
+                password: "jesttest"
+            })
+            .expect(302)
+            .expect('Location', /home/)
+            .then((response) => {
+                this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+            });
+        done();
+    });
+
+    it("get search results", async (done) => {
+        var posts = await Post.find({$text: {$search: "DNA"}, author: {$ne: "jest"}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}});
+        var req = request.post('/searchPost');
+        req.cookies = this.Cookies;
+        await req
+            .type('form')
+            .send({
+                keywords: "DNA",
+            })
+            .expect(200)
+            .then((response) => {
+                for(post of posts) {
+                    expect(response.text.includes(post.text)).toBeTruthy();
+                }
+            });
+        done();
+    });
+
+});
+
+describe('T10', () => {
+
+    it('Login admin', async (done) => {
+        await request.post('/login')
+            .type('form')
+            .send({
+                email: "jestAdmin@gmail.com",
+                password: "jestAdmin"
+            })
+            .expect(302)
+            .expect('Location', /home/)
+            .then((response) => {
+                this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+            })
+        done()
+    });
+
+    it("Check if admin can view reported posts", async (done) => {
+        var posts = await Post.find({isReported: true}).sort({date: -1});
+        var req = request.get('/viewReportedPosts');
+        req.cookies = this.Cookies;
+        await req
+            .expect(200)
+            .then((response) => {
+                for(post of posts) {
+                    expect(response.text.includes(post._id)).toBeTruthy();
+                }
+            });
+        done();
+    });
+
+    it('Log out', async (done) => {
+        await request.get('/logout')
+            .expect(302)
+            .expect('Location', /login/);
+        done();
+    });
+
+    it('Login regular user', async (done) => {
+        await request.post('/login')
+            .type('form')
+            .send({
+                email: "jest@gmail.com",
+                password: "jesttest"
+            })
+            .expect(302)
+            .expect('Location', /home/)
+            .then((response) => {
+                this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+            })
+        done()
+    });
+
+    it('Regular user attempts to view reported posts', async (done) => {
+        var req = request.get('/viewReportedPosts');
+        req.cookies = this.Cookies;
+        await req
+            .expect(403);
+        done();
+    });
+
+});
+
 describe('User session', () => {
 
     it('Ribbet landing page', async (done) => {

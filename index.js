@@ -1554,7 +1554,7 @@ app.get("/viewReportedPosts", (req,res)=>{
                     }
                 });
             } else {
-                res.redirect('error');
+                res.status(403).render('error');
             }
         }
     } else {
@@ -1590,8 +1590,7 @@ app.get("/ban/username/:username", (req, res) => {
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             if (req.session.user.isAdmin) {
-                if (req.session.user.isAdmin) {
-                    const username = req.params.username;
+                const username = req.params.username;
                     User.findOne({username: username}, function(error, foundUser) {
                         foundUser.isBanned = true;
                         foundUser.save(function (saveErr) {
@@ -1612,11 +1611,8 @@ app.get("/ban/username/:username", (req, res) => {
                             }
                         });
                     });
-                } else {
-                    res.redirect('back');
-                }
             } else {
-                res.redirect('error');
+                res.status(403).render('error');
             }
         }
     } else {
@@ -1648,7 +1644,7 @@ app.get("/unban/username/:username", (req, res) => {
             });
         });
     } else {
-        res.redirect('back');
+        res.status(403).render('error');
     }
 });
 
