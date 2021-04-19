@@ -10,12 +10,13 @@ const Interest = index.Interest;
 // /like/postId/607c7801f13d0f9d4c5d23b2
 
 beforeAll(async (done) => {
-    await User.findOneAndDelete({ email: 'jestEmail@gmail.com', username: 'jestUsername' })
+    await User.deleteOne({ email: 'jestEmail@gmail.com', username: 'jestUsername' })
     await Post.findOne({ text: 'Test post for likes and dislikes' }, (function (error, foundPost) {
         foundPost.likes = []
         foundPost.dislikes = []
         foundPost.save()
     }))
+    await Post.deleteOne({ text: 'Testing a new posts on this site' })
     done()
 })
 
@@ -132,7 +133,7 @@ describe('T01', () => {
 
 describe('T02', () => {
 
-    beforeAll(async (done) => {
+    beforeEach(async (done) => {
         await request.post('/login')
             .type('form')
             .send({
@@ -200,13 +201,16 @@ describe('T02', () => {
     })
 
     it('See post of followed user on home page', async (done) => {
+        var posts = await Post.find({author: "takenUsername"})
         var req = request.get('/home')
         req.cookies = this.Cookies
         await req
             .expect(200)
-            // .then((response) => {
-                // response.text.should.match(/takenUsername/)
-            // })
+            .then((response) => {
+                for (let post of posts) {
+                    expect(response.text.includes(post._id)).toBeTruthy()
+                }
+            })
         done()
     })
 
@@ -243,20 +247,23 @@ describe('T02', () => {
     })
 
     it('Do not see post of unfollowed user on home page', async (done) => {
+        var posts = await Post.find({author: "takenUsername"})
         var req = request.get('/home')
         req.cookies = this.Cookies
         await req
             .expect(200)
-        // .then((response) => {
-        //   response.text.should.match(/Test post for likes and dislikes/)
-        // })
+            .then((response) => {
+                for (let post of posts) {
+                    expect(response.text.includes(post._id)).toBeFalsy()
+                }
+            })
         done()
     })
 })
 
 describe('T03', () => {
 
-    beforeAll(async (done) => {
+    beforeEach(async (done) => {
         await request.post('/login')
             .type('form')
             .send({
@@ -430,6 +437,7 @@ describe('T03', () => {
 })
 
 describe('IN-01-04', () => {
+
     it('Report post without login', async (done) => {
         await request.get('/report/postId/607c7801f13d0f9d4c5d23b2')
             .expect(401);
@@ -487,9 +495,11 @@ describe('IN-01-04', () => {
             .expect('Location', /login/);
         done();
     });
+
 });
 
 describe('OU-01-01', () => {
+
     it('Login', async (done) => {
         await request.post('/login')
             .type('form')
@@ -541,6 +551,7 @@ describe('OU-01-01', () => {
             .expect('Location', /login/);
         done();
     });
+
 });
 
 describe('PR-01-01', () => {
@@ -718,6 +729,7 @@ describe('PR-01-01', () => {
             .expect('Location', /login/);
         done();
     });
+
 });
 
 describe('User session', () => {
@@ -943,6 +955,7 @@ describe('User session', () => {
             .expect(200)
         done()
     })
+
     it("get other user's profile information", async (done) => {
         var req = request.get('/profile/allen')
         req.cookies = this.Cookies;
@@ -957,6 +970,7 @@ describe('User session', () => {
             })
         done()
     })
+
     it("get non-existent user's profile information", async (done) => {
         var req = request.get('/profile/user234234')
         req.cookies = this.Cookies;
@@ -985,6 +999,7 @@ describe('User session', () => {
             .expect(200)
         done()
     })
+
     it("get popular page", async (done) => {
         var req = request.get('/popular')
         req.cookies = this.Cookies;
@@ -992,6 +1007,7 @@ describe('User session', () => {
             .expect(200)
         done()
     })
+
 })
 
 afterAll(done => {
