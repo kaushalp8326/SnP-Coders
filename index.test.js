@@ -9,6 +9,66 @@ const Interest = index.Interest;
 
 // /like/postId/607c7801f13d0f9d4c5d23b2
 
+describe('IN-01-04', () => {
+    it('Report post without login', async(done) => {
+        await request.get('/report/postId/607c7801f13d0f9d4c5d23b2')
+        .expect(401);
+        done();
+    });
+
+    it('Login', async(done) => {
+        await request.post('/login')
+        .type('form')
+        .send({
+            email: "jest@gmail.com",
+            password: "jesttest"
+        })
+        .expect(302)
+        .expect('Location', /home/)
+        .then ((response) => {
+            this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+        });
+        done();
+    });
+
+    it('Report invalid post', async(done) => {
+        var req = request.get('/report/postId/assssddadadaad');
+        req.cookies = this.Cookies; 
+        await req
+        .expect(400);
+        done();
+    });
+
+    it("Report post", async(done) => {
+        var req = request.get('/report/postId/607c7801f13d0f9d4c5d23b2')
+        req.cookies = this.Cookies;
+        await req
+        .expect(302)
+        done();
+    });
+
+    it("Check if reported post shows up in admin", async(done) => {
+        Post.findOne({_id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2')}, function (error, foundPost) {
+            if (error) {
+                console.log(error);
+                done();
+            } else {
+                if (foundPost) {
+                    expect(foundPost.isReported).toBe(true);
+                }
+                done();
+            }
+        });
+    })
+    
+    it('Log out', async(done) => {
+        await request.get('/logout')
+        .expect(302)
+        .expect('Location', /login/);
+        done();
+    });
+});
+
 describe('OU-01-01', () => {
     it('Login', async(done) => {
         await request.post('/login')

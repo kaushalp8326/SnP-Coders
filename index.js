@@ -1484,23 +1484,27 @@ app.get("/report/postId/:postId", (req, res) => {
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const postId = req.params.postId;
-            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(reportPostError, reportPost) {
-                if (reportPostError) {
-                    console.log(reportPostError);
-                } else {
-                    reportPost.isReported=true;
-                    reportPost.save(function(saveError) {
-                        if (saveError) {
-                            console.log(saveError);
-                        } else {
-                            res.redirect('back');
-                        }
-                    });
-                }
-            }));
+            if (!mongoose.Types.ObjectId.isValid(postId)) {
+                res.status(400).render('error', {user: req.session.user});
+            } else {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(reportPostError, reportPost) {
+                    if (reportPostError) {
+                        console.log(reportPostError);
+                    } else {
+                        reportPost.isReported=true;
+                        reportPost.save(function(saveError) {
+                            if (saveError) {
+                                console.log(saveError);
+                            } else {
+                                res.redirect('back');
+                            }
+                        });
+                    }
+                }));
+            }
         }
     } else {
-        res.redirect('/');
+        res.status(401).render('error');
     }
 });
 
