@@ -263,6 +263,30 @@ describe('T02', () => {
 
 describe('T03', () => {
 
+    it('Like post without login', async (done) => {
+        await request.get('/like/postId/607c7801f13d0f9d4c5d23b2')
+            .expect(401);
+        done();
+    });
+
+    it('Dislike post without login', async (done) => {
+        await request.get('/dislike/postId/607c7801f13d0f9d4c5d23b2')
+            .expect(401);
+        done();
+    });
+
+    it('Unlike post without login', async (done) => {
+        await request.get('/unlike/postId/607c7801f13d0f9d4c5d23b2')
+            .expect(401);
+        done();
+    });
+
+    it('Undislike post without login', async (done) => {
+        await request.get('/undislike/postId/607c7801f13d0f9d4c5d23b2')
+            .expect(401);
+        done();
+    });
+
     beforeEach(async (done) => {
         await request.post('/login')
             .type('form')
@@ -275,6 +299,38 @@ describe('T03', () => {
             })
         done()
     })
+
+    it('Like with invalid post', async (done) => {
+        var req = request.get('/like/postId/assssddadadaad');
+        req.cookies = this.Cookies;
+        await req
+            .expect(400);
+        done();
+    });
+
+    it('Dislike with invalid post', async (done) => {
+        var req = request.get('/dislike/postId/assssddadadaad');
+        req.cookies = this.Cookies;
+        await req
+            .expect(400);
+        done();
+    });
+
+    it('Unlike with invalid post', async (done) => {
+        var req = request.get('/unlike/postId/assssddadadaad');
+        req.cookies = this.Cookies;
+        await req
+            .expect(400);
+        done();
+    });
+
+    it('Undislike with invalid post', async (done) => {
+        var req = request.get('/undislike/postId/assssddadadaad');
+        req.cookies = this.Cookies;
+        await req
+            .expect(400);
+        done();
+    });
 
     it('Unlike a post that you have not liked', async (done) => {
         var foundPost = await Post.findOne({ text: "Test post for likes and dislikes" })
@@ -436,150 +492,45 @@ describe('T03', () => {
 
 })
 
-describe('IN-01-04', () => {
-
-    it('Report post without login', async (done) => {
-        await request.get('/report/postId/607c7801f13d0f9d4c5d23b2')
-            .expect(401);
-        done();
-    });
-
-    it('Login', async (done) => {
-        await request.post('/login')
-            .type('form')
-            .send({
-                email: "jest@gmail.com",
-                password: "jesttest"
-            })
-            .expect(302)
-            .expect('Location', /home/)
-            .then((response) => {
-                this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
-            });
-        done();
-    });
-
-    it('Report invalid post', async (done) => {
-        var req = request.get('/report/postId/assssddadadaad');
-        req.cookies = this.Cookies;
-        await req
-            .expect(400);
-        done();
-    });
-
-    it("Report post", async (done) => {
-        var req = request.get('/report/postId/607c7801f13d0f9d4c5d23b2')
-        req.cookies = this.Cookies;
-        await req
-            .expect(302)
-        done();
-    });
-
-    it("Check if reported post shows up in admin", async (done) => {
-        Post.findOne({ _id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2') }, function (error, foundPost) {
-            if (error) {
-                console.log(error);
-                done();
-            } else {
-                if (foundPost) {
-                    expect(foundPost.isReported).toBe(true);
-                }
-                done();
-            }
-        });
-    })
-
-    it('Log out', async (done) => {
-        await request.get('/logout')
-            .expect(302)
-            .expect('Location', /login/);
-        done();
-    });
-
-});
-
-describe('OU-01-01', () => {
-
-    it('Login', async (done) => {
-        await request.post('/login')
-            .type('form')
-            .send({
-                email: "jest@gmail.com",
-                password: "jesttest"
-            })
-            .expect(302)
-            .expect('Location', /home/)
-            .then((response) => {
-                this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
-            });
-        done();
-    });
-
-    it("Check timeline", async (done) => {
-        var req = request.get('/home')
+describe('T04', () => {    
+    it("get other user's profile information", async (done) => {
+        var req = request.get('/profile/allen')
         req.cookies = this.Cookies;
         await req
             .expect(200)
             .then((response) => {
-                User.findOne({ username: "jest" }, function (error, foundUser) {
-                    if (error) {
-                        console.log(error);
-                        done();
-                    } else {
-                        Post.find({ isVisible: true, author: { $in: foundUser.following } }).exec(function (findPostError, foundPosts) {
-                            if (findPostError) {
-                                console.log(findPostError);
-                                done();
-                            } else {
-                                if (foundPosts) {
-                                    for (let post of foundPosts) {
-                                        expect(response.text.includes(post._id)).toBe(true);
-                                    }
-                                }
-                                done();
-                            }
-                        })
-                    }
-                });
+                response.text.should.match(/allen's Profile/);
+                response.text.should.match(/Rutgers 2022 CS/);
+                response.text.should.match(/Followers.*1/su);
+                response.text.should.match(/Following.*1/su);
 
-            });
-    });
+            })
+        done()
+    })
 
-    it('Log out', async (done) => {
-        await request.get('/logout')
+    it("get non-existent user's profile information", async (done) => {
+        var req = request.get('/profile/user234234')
+        req.cookies = this.Cookies;
+        await req
             .expect(302)
-            .expect('Location', /login/);
-        done();
-    });
+            .expect('Location', /error/)
+        done()
+    })
 
+    it("get banned user's profile information", async (done) => {
+        var req = request.get('/profile/username')
+        req.cookies = this.Cookies;
+        await req
+            .expect(200)
+            .then((response) => {
+                response.text.should.match(/User is currently banned./);
+
+            })
+        done()
+    })
 });
 
-describe('PR-01-01', () => {
-
-    it('Like post without login', async (done) => {
-        await request.get('/like/postId/607c7801f13d0f9d4c5d23b2')
-            .expect(401);
-        done();
-    });
-
-    it('Dislike post without login', async (done) => {
-        await request.get('/dislike/postId/607c7801f13d0f9d4c5d23b2')
-            .expect(401);
-        done();
-    });
-
-    it('Unlike post without login', async (done) => {
-        await request.get('/unlike/postId/607c7801f13d0f9d4c5d23b2')
-            .expect(401);
-        done();
-    });
-
-    it('Undislike post without login', async (done) => {
-        await request.get('/undislike/postId/607c7801f13d0f9d4c5d23b2')
-            .expect(401);
-        done();
-    });
-
+describe('T05', () => {
     it('Login', async (done) => {
         await request.post('/login')
             .type('form')
@@ -595,144 +546,42 @@ describe('PR-01-01', () => {
         done();
     });
 
-    it('Like with invalid post', async (done) => {
-        var req = request.get('/like/postId/assssddadadaad');
+    it("get popular page", async (done) => {
+        var req = request.get('/popular')
         req.cookies = this.Cookies;
         await req
-            .expect(400);
-        done();
-    });
+            .expect(200)
+        done()
+    })
+});
 
-    it('Dislike with invalid post', async (done) => {
-        var req = request.get('/dislike/postId/assssddadadaad');
-        req.cookies = this.Cookies;
-        await req
-            .expect(400);
-        done();
-    });
-
-    it('Unlike with invalid post', async (done) => {
-        var req = request.get('/unlike/postId/assssddadadaad');
-        req.cookies = this.Cookies;
-        await req
-            .expect(400);
-        done();
-    });
-
-    it('Undislike with invalid post', async (done) => {
-        var req = request.get('/undislike/postId/assssddadadaad');
-        req.cookies = this.Cookies;
-        await req
-            .expect(400);
-        done();
-    });
-
-    it('Like post', async (done) => {
-        var req = request.get('/like/postId/607c7801f13d0f9d4c5d23b2');
-        req.cookies = this.Cookies;
-        await req
-            .expect(302);
-        done();
-    });
-
-    it('Check if karma updated after like', async (done) => {
-        Post.findOne({ _id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2') }, function (findPostError, foundPost) {
-            if (findPostError) {
-                console.log(findPostError);
-            } else {
-                if (foundPost) {
-                    expect(foundPost.likes.includes('jest')).toBe(true);
-                    expect(foundPost.dislikes.includes('jest')).toBe(false);
-                }
-            }
-            done();
-        })
-    });
-
-    it('Dislike post', async (done) => {
-        var req = request.get('/dislike/postId/607c7801f13d0f9d4c5d23b2');
-        req.cookies = this.Cookies;
-        await req
-            .expect(302);
-        done();
-    });
-
-    it('Check if karma updated after dislike', async (done) => {
-        Post.findOne({ _id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2') }, function (findPostError, foundPost) {
-            if (findPostError) {
-                console.log(findPostError);
-            } else {
-                if (foundPost) {
-                    expect(foundPost.likes.includes('jest')).toBe(false);
-                    expect(foundPost.dislikes.includes('jest')).toBe(true);
-                }
-            }
-            done();
-        })
-    });
-
-    it('Unlike post', async (done) => {
-        var req = request.get('/like/postId/607c7801f13d0f9d4c5d23b2');
-        req.cookies = this.Cookies;
-        await req
-            .expect(302);
-
-        req = request.get('/unlike/postId/607c7801f13d0f9d4c5d23b2');
-        req.cookies = this.Cookies;
-        await req
-            .expect(302);
-        done();
-    });
-
-    it('Check if karma updated after unlike', async (done) => {
-        Post.findOne({ _id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2') }, function (findPostError, foundPost) {
-            if (findPostError) {
-                console.log(findPostError);
-            } else {
-                if (foundPost) {
-                    expect(foundPost.likes.includes('jest')).toBe(false);
-                }
-            }
-            done();
-        })
-    });
-
-    it('Undislike post', async (done) => {
-        var req = request.get('/dislike/postId/607c7801f13d0f9d4c5d23b2');
-        req.cookies = this.Cookies;
-        await req
-            .expect(302);
-
-        req = request.get('/undislike/postId/607c7801f13d0f9d4c5d23b2');
-        req.cookies = this.Cookies;
-        await req
-            .expect(302);
-        done();
-    });
-
-    it('Check if karma updated after undislike', async (done) => {
-        Post.findOne({ _id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2') }, function (findPostError, foundPost) {
-            if (findPostError) {
-                console.log(findPostError);
-            } else {
-                if (foundPost) {
-                    expect(foundPost.dislikes.includes('jest')).toBe(false);
-                }
-            }
-            done();
-        })
-    });
-
-    it('Log out', async (done) => {
-        await request.get('/logout')
+describe('T06', () => {
+    it('Login', async (done) => {
+        await request.post('/login')
+            .type('form')
+            .send({
+                email: "jest@gmail.com",
+                password: "jesttest"
+            })
             .expect(302)
-            .expect('Location', /login/);
+            .expect('Location', /home/)
+            .then((response) => {
+                this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
+            });
         done();
     });
+
+    it("get explore page", async (done) => {
+        var req = request.get('/explore')
+        req.cookies = this.Cookies;
+        await req
+            .expect(200)
+        done()
+    })
 
 });
 
-describe('T08', () => {
+describe('T07', () => {
 
     it('Login admin', async (done) => {
         await request.post('/login')
@@ -826,7 +675,7 @@ describe('T08', () => {
 
 });
 
-describe('T09', () => {
+describe('T08', () => {
 
     it('Login', async (done) => {
         await request.post('/login')
@@ -863,8 +712,7 @@ describe('T09', () => {
 
 });
 
-describe('T10', () => {
-
+describe('T09', () => {
     it('Login admin', async (done) => {
         await request.post('/login')
             .type('form')
@@ -901,6 +749,13 @@ describe('T10', () => {
         done();
     });
 
+    
+    it('Report post without login', async (done) => {
+        await request.get('/report/postId/607c7801f13d0f9d4c5d23b2')
+            .expect(401);
+        done();
+    });
+
     it('Login regular user', async (done) => {
         await request.post('/login')
             .type('form')
@@ -912,8 +767,8 @@ describe('T10', () => {
             .expect('Location', /home/)
             .then((response) => {
                 this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
-            })
-        done()
+            });
+        done();
     });
 
     it('Regular user attempts to view reported posts', async (done) => {
@@ -921,6 +776,43 @@ describe('T10', () => {
         req.cookies = this.Cookies;
         await req
             .expect(403);
+        done();
+    });
+
+    it('Report invalid post', async (done) => {
+        var req = request.get('/report/postId/assssddadadaad');
+        req.cookies = this.Cookies;
+        await req
+            .expect(400);
+        done();
+    });
+
+    it("Report post", async (done) => {
+        var req = request.get('/report/postId/607c7801f13d0f9d4c5d23b2')
+        req.cookies = this.Cookies;
+        await req
+            .expect(302)
+        done();
+    });
+
+    it("Check if reported post shows up in admin", async (done) => {
+        Post.findOne({ _id: mongoose.Types.ObjectId('607c7801f13d0f9d4c5d23b2') }, function (error, foundPost) {
+            if (error) {
+                console.log(error);
+                done();
+            } else {
+                if (foundPost) {
+                    expect(foundPost.isReported).toBe(true);
+                }
+                done();
+            }
+        });
+    })
+
+    it('Log out', async (done) => {
+        await request.get('/logout')
+            .expect(302)
+            .expect('Location', /login/);
         done();
     });
 
@@ -1150,57 +1042,9 @@ describe('User session', () => {
         done()
     })
 
-    it("get other user's profile information", async (done) => {
-        var req = request.get('/profile/allen')
-        req.cookies = this.Cookies;
-        await req
-            .expect(200)
-            .then((response) => {
-                response.text.should.match(/allen's Profile/);
-                response.text.should.match(/Rutgers 2022 CS/);
-                response.text.should.match(/Followers.*1/su);
-                response.text.should.match(/Following.*1/su);
+    
 
-            })
-        done()
-    })
-
-    it("get non-existent user's profile information", async (done) => {
-        var req = request.get('/profile/user234234')
-        req.cookies = this.Cookies;
-        await req
-            .expect(302)
-            .expect('Location', /error/)
-        done()
-    })
-
-    it("get banned user's profile information", async (done) => {
-        var req = request.get('/profile/username')
-        req.cookies = this.Cookies;
-        await req
-            .expect(200)
-            .then((response) => {
-                response.text.should.match(/User is currently banned./);
-
-            })
-        done()
-    })
-
-    it("get explore page", async (done) => {
-        var req = request.get('/explore')
-        req.cookies = this.Cookies;
-        await req
-            .expect(200)
-        done()
-    })
-
-    it("get popular page", async (done) => {
-        var req = request.get('/popular')
-        req.cookies = this.Cookies;
-        await req
-            .expect(200)
-        done()
-    })
+    
 
 })
 
