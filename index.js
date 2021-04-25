@@ -11,11 +11,11 @@ const port = 6969;
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(session({
+app.use(session({           //setting up client session
     cookieName: 'session',
     secret: 'AAKL',
-    duration: 30 * 60 * 1000,
-    activeDuration: 5 * 60 * 1000,
+    duration: 30 * 60 * 1000,         //user will be auto logged out if they do not log in for this duration
+    activeDuration: 5 * 60 * 1000,      //user will be auto logged out if they are inactive on the page for this duration
   }));
 
 // module.exports = app;
@@ -24,37 +24,37 @@ app.use(session({
 mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', {useNewUrlParser: true, useUnifiedTopology: true});
 
 
-const userSchema = {
-    username: String,
-    email: String,
-    password: String,
-    isAdmin: Boolean,
-    isBanned: Boolean,
-    picture: String,
-    bio: String,
-    joined: Date,
-    following: [String],
-    followers: [String],
-    interests: [String]
+const userSchema = { //schema in MongoDB for user
+    username: String,   //username 
+    email: String,      //email account for user
+    password: String,   //hashed password for user
+    isAdmin: Boolean,   //boolean for admin
+    isBanned: Boolean,  //boolean for if user is banned by admin
+    picture: String,    //string of URL for profile picture
+    bio: String,        //string containing user bio
+    joined: Date,       //date account was made
+    following: [String],    //array of usernames of users that this person follows
+    followers: [String],    //array of usernames of users that follow this person
+    interests: [String]     //array of interests that this user has 
 };
 
-const postSchema = {
-    text: String,
-    author: String,
-    likes: [String],
-    dislikes: [String],
-    master: Boolean,
-    date: Date,
-    interest: String,
-    isReported: Boolean,
-    isVisible: Boolean,
-    isAnnouncement: Boolean,
-    comments: [{type: mongoose.Types.ObjectId, ref: "Post"}]
+const postSchema = { //schema in MongoDB for a post
+    text: String, //text contents of the post
+    author: String, //username of the post author
+    likes: [String], //list of usernames who liked the post
+    dislikes: [String], //list of users who disliked the post
+    master: Boolean, //if master is true, this is the original post, else it is a comment
+    date: Date, //date the post was made
+    interest: String, //name of the interest
+    isReported: Boolean, //boolean for if the post is reported by another user
+    isVisible: Boolean, //if boolean if false, post will not be seen
+    isAnnouncement: Boolean, //if true, it has been made by an admin and will be on announcements page
+    comments: [{type: mongoose.Types.ObjectId, ref: "Post"}] //list of posts that are replies to the post
 };
 
-const interestSchema = {
-    name: String,
-    approved: Boolean
+const interestSchema = { //schema in MongoDB for an interest
+    name: String, //interest name
+    approved: Boolean //boolean to see if the interest is approved by an admin
 };
 
 const User = new mongoose.model('User', userSchema);
@@ -63,7 +63,7 @@ const Interest = new mongoose.model('Interest', interestSchema);
 
 
 // Landing Page
-app.get('/', (req, res) => {
+app.get('/', (req, res) => {   
     res.render('index');
 });
 
@@ -80,57 +80,57 @@ app.get('/register', (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-    let validEmail = true;
-    let validUsername = true;
-    let validPassword = true;
-    let registerFail = [];
-
-    if (!/[a-z]/i.test(req.body.email)) {
+    let validEmail = true; //boolean for valid email
+    let validUsername = true; //boolean for valid username
+    let validPassword = true; //boolean for valid password
+    let registerFail = [];  //list of reasons why register fails
+ 
+    if (!/[a-z]/i.test(req.body.email)) { //checks input for valid email format
         validEmail = false;
         registerFail.push("Please enter an email.");
     }
 
-    if (!/[a-z]/i.test(req.body.username)) {
+    if (!/[a-z]/i.test(req.body.username)) { //checks input for valid username format
         validUsername = false;
         registerFail.push("Please enter a username.");
     }
 
-    if (!/[a-z]/i.test(req.body.password)) {
+    if (!/[a-z]/i.test(req.body.password)) { //checks input for valid password format
         validPassword = false;
         registerFail.push("Please enter a password.");
     }
 
-    User.findOne({email: req.body.email}, function(error, foundEmail) {
+    User.findOne({email: req.body.email}, function(error, foundEmail) { //checks if there is already an existing account for that username
         if (error) {
             console.log(error);
             res.redirect('register');
         } else {
-            if (foundEmail) {
+            if (foundEmail) { //if email is found, then an account already exists with that email
                 validEmail = false;
-                registerFail.push("Email is already taken.");
+                registerFail.push("Email is already taken."); //push error message to registerFail
             }
-            User.findOne({username: req.body.username}, function(erro, foundUser) {
+            User.findOne({username: req.body.username}, function(erro, foundUser) { //checks if there is an existing account for that username
                 if (erro) {
                     console.log(erro);
                     res.redirect('register');
-                } else {
+                } else { //if a username is found, return error message since that username already exists
                     if (foundUser) {
                         validUsername = false;
-                        registerFail.push("Username is already taken.");
+                        registerFail.push("Username is already taken."); //push error message to registerFail
                     }
-                    if (validEmail && validUsername && validPassword) {
-                        bcrypt.hash(req.body.password, saltRounds, function(hashError, hash){
+                    if (validEmail && validUsername && validPassword) { //if all are valid entries
+                        bcrypt.hash(req.body.password, saltRounds, function(hashError, hash){ //hash password with bcrypt
                             if (hashError) {
                                 console.log(hashError);
                                 res.redirect('register');
-                            } else {
+                            } else { //if hash successful, we will make a new user in the database
                                 const newUser = new User({
                                     username: req.body.username,
                                     email: req.body.email,
                                     password: hash,
                                     joined: new Date()
                                 });
-                                newUser.save(function(saveError) {
+                                newUser.save(function(saveError) { //save user to db
                                     if (saveError) {
                                         console.log(saveError);
                                         res.redirect('register');
@@ -140,15 +140,14 @@ app.post("/register", (req, res) => {
                                             if (findPostError) {
                                                 console.log(findPostError);
                                             } else {
-                                                // res.render('userPage', {user: req.session.user, posts: foundPosts});
-                                                res.redirect('/home');
+                                                res.redirect('/home'); //redirect user to the home page
                                             }
                                         });
                                     }
                                 });
                             } 
                         });
-                    } else {
+                    } else { //if there was an invalid field or error, set status to 406 and reload register with registerFail contents
                         res.status(406).render("register", {registerFail: registerFail});
                     }
                 }
@@ -159,38 +158,39 @@ app.post("/register", (req, res) => {
 
 // Login Pages
 app.get('/login', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //logs in with session user (cookie) info if it exists
+        if (req.session.user.isBanned) { //if user is banned,redirect to the banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            res.redirect('home');
+            res.redirect('home'); //goes to home page for user
         }
     }
-    else {
+    else { //if no session user, load the login page
         res.render('login');
     }
 });
 
-app.post("/login", (req,res)=> {
-    const email = req.body.email;
-    const password = req.body.password;
+//Login function
+app.post("/login", (req,res)=> { 
+    const email = req.body.email; //get request email
+    const password = req.body.password; //get request password
     
-    User.findOne({email: email}, function(findUserError, foundUser){
+    User.findOne({email: email}, function(findUserError, foundUser){ //find user account in DB
         if (findUserError) {
-            console.log(findUserError);
+            console.log(findUserError); //if error, log error and redirect to login
             res.redirect('login');
         } else {
-            if (foundUser) {
-                bcrypt.compare(password, foundUser.password, function(compareError, result) {
-                    if (compareError) {
+            if (foundUser) { //if user is found in DB
+                bcrypt.compare(password, foundUser.password, function(compareError, result) {//hash password and compare
+                    if (compareError) { 
                         console.log(compareError);
                         res.redirect('login');
                     } else {
-                        if (result === true) {
-                            if (foundUser.isBanned) {
-                                res.render('ban', {user: foundUser, banned: foundUser});
+                        if (result === true) { //if passwords match, we will check to see if the user is bannned
+                            if (foundUser.isBanned) { //if banned, render banned page
+                                res.render('ban', {user: foundUser, banned: foundUser}); 
                             } else {
-                                req.session.user = foundUser;
+                                req.session.user = foundUser; //set session user to the user that signed in
                                 res.redirect('home');
                             }
                         } else {
@@ -199,7 +199,7 @@ app.post("/login", (req,res)=> {
                     }
                 });
             } else {
-                res.render('login', {loginfail: 'Failed login attempt'});
+                res.render('login', {loginfail: 'Failed login attempt'}); //render login again with failed login info
             }
         }
     });
@@ -208,29 +208,31 @@ app.post("/login", (req,res)=> {
 
 // Home Page
 app.get('/home', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
-            res.render('ban', {user: req.session.user, banned: req.session.user});
+    if (req.session.user) { //if session user exists
+        if (req.session.user.isBanned) { //check if user is banned
+            res.render('ban', {user: req.session.user, banned: req.session.user}); //render banned page
         } else {
+            //find all posts made by users that this user follows
             Post.find({isVisible: true, author: {$in: req.session.user.following}}).sort({date: -1}).exec(function(findPostError, foundPosts) {
                 if (findPostError) {
                     console.log(findPostError);
                     res.redirect('error');
                 } else {
-                    let authors = [];
-                    for (let post of foundPosts) {
-                        authors.push(post.author);
+                    let authors = []; //list of post authors
+                    for (let post of foundPosts) { 
+                        authors.push(post.author); //push usernames of authors to this list
                     }
-                    User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) {
+                    User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) { //find users of these posts
                         if (findUserError) {
                             console.log(findUserError);
                             res.redirect('error');
                         } else {
+                            //find the interests that all these users have
                             Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
                                 if (findInterestError) {
                                     res.redirect('error');
                                 } else {
-                                    if (foundInterests) {
+                                    if (foundInterests) { //take found interests lists and use it to render the interest buttons the home page
                                         res.render('home', {user: req.session.user, posts: foundPosts, users: foundUsers, interests: foundInterests});
                                     }
                                 }
@@ -241,70 +243,74 @@ app.get('/home', (req, res) => {
             });
         }
     }
-    else {
+    else { //if no session user, no one is signed in so we go to the landing page
         res.redirect('/');
     }
 });
 
 
 //Profile Pages
-app.get('/profile', function (req, res) {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+
+//default profile page
+app.get('/profile', function (req, res) { //goes to the profile page of the session user
+    if (req.session.user) { //if session user exists
+        if (req.session.user.isBanned) { //if user is banned, redirect to banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
-        } else {
-            res.redirect('/profile/' + req.session.user.username);
+        } else { //redirect to profile page of session user by calling get profile/:profile
+            res.redirect('/profile/' + req.session.user.username); 
         }
-    } else {
+    } else { //if no session user, no one is signed in so we go to the landing page
         res.redirect('/');
     }
 });
 
-app.get('/profile/:profile', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+//loads the profile of any user on the site
+app.get('/profile/:profile', (req, res) => { 
+    if (req.session.user) { //if session user exists
+        if (req.session.user.isBanned) { //if user is banned, redirect to banned page
             res.redirect('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            const username = req.params.profile;
-            if (req.params.profile == req.session.user.username) {
-                Post.find({author: req.session.user.username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+            const username = req.params.profile; //username in the parameter of the request, i.e: profile/stevesmith, username = stevesmith
+            if (req.params.profile == req.session.user.username) { //if the username is the same as the session user, load userPage ejs
+                Post.find({author: req.session.user.username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) { //find all posts by session user
                     if (findPostError) {
                         console.log(findPostError);
                         res.redirect('../error');
-                    } else {
+                    } else { //find all approved interests
                         Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
                             if (findInterestError) {
                                 res.redirect('../error');
                             } else {
-                                if (foundInterests) {
+                                if (foundInterests) { //render the page with the session user info, posts, and interests
                                     res.render('userPage', {user: req.session.user, posts: foundPosts, interests: foundInterests});
                                 }
                             }
                         });
                     }
                 });
-            } else {
-                User.findOne({username: username}, function(error, foundUser) {
+            } else {//if this is not the profile of the session user
+                User.findOne({username: username}, function(error, foundUser) { //find the user in the database
                     if (error) {
                         console.log(error);
                         res.redirect('../error');
                     } else {
-                        if(foundUser == null){
+                        if(foundUser == null){ //if the user does not exist, then redirect to error page
                             res.redirect('../error');
                         }
-                        Post.find({author: username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+                        Post.find({author: username, isVisible: true}).sort({date: -1}).exec(function(findPostError, foundPosts) { //if the user is found, then find all their posts
                             if (findPostError) {
                                 console.log(findPostError);
                             } else {
                                 if (foundUser) {
+                                    //find all interests that are approved
                                     Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
                                         if (findInterestError) {
                                             res.redirect('../error');
                                         } else {
-                                            if (foundInterests) {
+                                            if (foundInterests) { //if user is banned, load banned page
                                                 if (foundUser.isBanned) {
                                                     res.render('ban', {user: req.session.user, banned: foundUser});
-                                                } else {
+                                                } else { //render profile with user info, posts, and interests
                                                     res.render('profile', {user: req.session.user, profileUser: foundUser, posts: foundPosts, interests: foundInterests});
                                                 }
                                             }
@@ -317,7 +323,7 @@ app.get('/profile/:profile', (req, res) => {
                 });
             }
         }
-    } else {
+    } else { //redirect to landing page if no session user
         res.redirect('/');
     }
     
@@ -326,27 +332,27 @@ app.get('/profile/:profile', (req, res) => {
 
 // Announcements Page
 app.get('/announcements', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) {//if session user exists
+        if (req.session.user.isBanned) {//if user is banned, redirect to banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
-        } else {
+        } else { //find all posts that have isAnnouncment == true
             Post.find({isAnnouncement: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
                 if (findPostError) {
                     console.log(findPostError);
                 } else {
-                    let authors = [];
-                    for (let post of foundPosts) {
-                        authors.push(post.author);
+                    let authors = []; //list of authors
+                    for (let post of foundPosts) { //add post authors to authors []
+                        authors.push(post.author); 
                     }
-                    User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) {
+                    User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) { //find users who made these announcements
                         if (findUserError) {
                             console.log(findUserError);
                         } else {
-                            Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
+                            Interest.find({approved: true}).exec(function (findInterestError, foundInterests) { //get list of approved interests
                                 if (findInterestError) {
                                     res.redirect('error');
                                 } else {
-                                    if (foundInterests) {
+                                    if (foundInterests) { //render announcements with session user info, posts, post authors, and interests
                                         res.render('announcements', {user: req.session.user, posts: foundPosts, users: foundUsers, interests: foundInterests});
                                     }
                                 }
@@ -358,26 +364,26 @@ app.get('/announcements', (req, res) => {
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 
 // Explore Page
-app.get("/explore", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+app.get("/explore", (req, res) => { //loads the explore page
+    if (req.session.user) {//if session user exists
+        if (req.session.user.isBanned) { //if user is banned, redirect to banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
-        } else {
+        } else { //find all unbanned users 
             User.find({isBanned: {$ne: true}, username: {$ne: req.session.user.username}}).exec(function(findPostError, foundUsers) {
                 if (findPostError) {
                     console.log(findPostError);
-                } else {
+                } else { //load explore page with users
                     res.render('explore', {user: req.session.user, users: foundUsers});
                 }
             });
         }
-    } else {
+    } else { //no session user so redirect to landing page
         res.redirect('/');
     }
 });
@@ -385,12 +391,12 @@ app.get("/explore", (req, res) => {
 
 // Popular Page
 app.get('/popular', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //if session user exists
+        if (req.session.user.isBanned) { // if user is banned, redirect to banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            Post.find({isVisible: true}).sort({likes: -1}).exec(function(findPostError, foundPosts) {
-                foundPosts = sortPopular(foundPosts, 0, foundPosts.length - 1);
+            Post.find({isVisible: true}).sort({likes: -1}).exec(function(findPostError, foundPosts) {//find all visible posts
+                foundPosts = sortPopular(foundPosts, 0, foundPosts.length - 1); //calls sortPopular method to sort posts by karma
                 if (findPostError) {
                     console.log(findPostError);
                 } else {
@@ -418,18 +424,18 @@ app.get('/popular', (req, res) => {
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
-function sortPopular(posts, start, end) {
+function sortPopular(posts, start, end) { //quicksort algorithm that sorts posts by karma
     if (start < end) {
         let pivot = posts[end].likes.length - posts[end].dislikes.length;
         let i = (start - 1);
         let swapTemp;
 
-        for (let j = start; j < end; j++) {
-            if ((posts[j].likes.length - posts[j].dislikes.length) >= pivot) {
+        for (let j = start; j < end; j++) {//iterate from the start to the end
+            if ((posts[j].likes.length - posts[j].dislikes.length) >= pivot) { //if karma is greater than or equal to the pivot value, swap with posts at i and increment
                 i++;
 
                 swapTemp = posts[i];
@@ -438,12 +444,12 @@ function sortPopular(posts, start, end) {
             }
         }
 
-        swapTemp = posts[i+1];
+        swapTemp = posts[i+1]; //swap pivot with element at i+i so all values less than pivot are left, and all greater than or equal to are on the right
         posts[i+1] = posts[end];
         posts[end] = swapTemp;
 
-        posts = sortPopular(posts, start, i)
-        posts = sortPopular(posts, i + 2, end)
+        posts = sortPopular(posts, start, i) //recursive quicksort on left
+        posts = sortPopular(posts, i + 2, end) //recursive quicksort on right
     }
 
     return posts;
@@ -452,21 +458,21 @@ function sortPopular(posts, start, end) {
 
 // Logout
 app.get('/logout', (req, res) => {
-    req.session.reset();
-    res.redirect('/login');
+    req.session.reset(); //reset session info
+    res.redirect('/login'); //redirect to login
 });
 
 
 // Profile Interactions
 app.get('/changePic', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
-        } else {
+        } else { //render change pic page
             res.render('changePic', {user: req.session.user, invalidURL: false});
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
     
 });
