@@ -80,33 +80,13 @@ app.get('/register', (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-    let validEmail = true; //boolean for valid email
-    let validUsername = true; //boolean for valid username
-    let validPassword = true; //boolean for valid password
-    let registerFail = [];  //list of reasons why register fails
- 
-    if (!/[a-z]/i.test(req.body.email)) { //checks input for valid email format
-        validEmail = false;
-        registerFail.push("Please enter an email.");
-    }
-
-    if (!/[a-z]/i.test(req.body.username)) { //checks input for valid username format
-        validUsername = false;
-        registerFail.push("Please enter a username.");
-    }
-
-    if (!/[a-z]/i.test(req.body.password)) { //checks input for valid password format
-        validPassword = false;
-        registerFail.push("Please enter a password.");
-    }
-
+    let registerFail = checkValidCredentials(req.body.email, req.body.username, req.body.password);  //list of reasons why register fails
     User.findOne({email: req.body.email}, function(error, foundEmail) { //checks if there is already an existing account for that username
         if (error) {
             console.log(error);
             res.redirect('register');
         } else {
             if (foundEmail) { //if email is found, then an account already exists with that email
-                validEmail = false;
                 registerFail.push("Email is already taken."); //push error message to registerFail
             }
             User.findOne({username: req.body.username}, function(erro, foundUser) { //checks if there is an existing account for that username
@@ -115,15 +95,14 @@ app.post("/register", (req, res) => {
                     res.redirect('register');
                 } else { //if a username is found, return error message since that username already exists
                     if (foundUser) {
-                        validUsername = false;
                         registerFail.push("Username is already taken."); //push error message to registerFail
                     }
-                    if (validEmail && validUsername && validPassword) { //if all are valid entries
+                    if (registerFail.length == 0) { //if all are valid entries
                         bcrypt.hash(req.body.password, saltRounds, function(hashError, hash){ //hash password with bcrypt
                             if (hashError) {
                                 console.log(hashError);
                                 res.redirect('register');
-                            } else { //if hash successful, we will make a new user in the database
+                            } else { //if hash successful, we will make a new user in the DB
                                 const newUser = new User({
                                     username: req.body.username,
                                     email: req.body.email,
@@ -156,6 +135,27 @@ app.post("/register", (req, res) => {
     });
 });
 
+// Function checks for valid credentials to create account
+function checkValidCredentials(email, username, password) {
+    let registerFail = [];
+    if (!/[a-z]/i.test(email)) { //checks input for valid email format
+        validEmail = false;
+        registerFail.push("Please enter an email.");
+    }
+
+    if (!/[a-z]/i.test(username)) { //checks input for valid username format
+        validUsername = false;
+        registerFail.push("Please enter a username.");
+    }
+
+    if (!/[a-z]/i.test(password)) { //checks input for valid password format
+        validPassword = false;
+        registerFail.push("Please enter a password.");
+    }
+
+    return registerFail
+}
+
 // Login Pages
 app.get('/login', (req, res) => {
     if (req.session.user) { //logs in with session user (cookie) info if it exists
@@ -170,11 +170,10 @@ app.get('/login', (req, res) => {
     }
 });
 
-//Login function
+// Login function
 app.post("/login", (req,res)=> { 
     const email = req.body.email; //get request email
     const password = req.body.password; //get request password
-    
     User.findOne({email: email}, function(findUserError, foundUser){ //find user account in DB
         if (findUserError) {
             console.log(findUserError); //if error, log error and redirect to login
@@ -289,7 +288,7 @@ app.get('/profile/:profile', (req, res) => {
                     }
                 });
             } else {//if this is not the profile of the session user
-                User.findOne({username: username}, function(error, foundUser) { //find the user in the database
+                User.findOne({username: username}, function(error, foundUser) { //find the user in the DB
                     if (error) {
                         console.log(error);
                         res.redirect('../error');
@@ -478,96 +477,96 @@ app.get('/changePic', (req, res) => {
 });
 
 app.post("/changePic", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            if (isImageUrl(req.body.picture)) {
-                User.findByIdAndUpdate(req.session.user._id, {picture: req.body.picture}, {new: true}, function (error, updatedUser) {
+            if (isImageUrl(req.body.picture)) { //make sure the string entered is the url of an image
+                User.findByIdAndUpdate(req.session.user._id, {picture: req.body.picture}, {new: true}, function (error, updatedUser) { //update user in DB with new profile picture
                     if (error) {
                         console.log(error);
                     }
                     else {
                         if (updatedUser) {
-                            req.session.user = updatedUser;
-                            res.redirect("/profile");
+                            req.session.user = updatedUser; //update the session user information
+                            res.redirect("/profile"); //redirect user to their profile page
                         }
                     }
                 });
-            } else {
-                res.render('changePic', {user: req.session.user, invalidURL: true});
+            } else { //retrun to change pic page and notify user of invalid image url
+                res.render('changePic', {user: req.session.user, invalidURL: true}); 
             }
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get('/editBio', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
-        } else {
+        } else { //render edit bio page
             res.render('editBio', {user: req.session.user});
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.post("/editBio", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            User.findByIdAndUpdate(req.session.user._id, {bio: req.body.bio}, {new: true}, function (error, updatedUser) {
+            User.findByIdAndUpdate(req.session.user._id, {bio: req.body.bio}, {new: true}, function (error, updatedUser) { //update user in DB with new bio
                 if (error) {
                     console.log(error);
                 }
                 else {
                     if (updatedUser) {
-                        req.session.user = updatedUser;
-                        res.redirect("/profile");
+                        req.session.user = updatedUser; //update the session user information
+                        res.redirect("/profile"); //redirect user to their profile page
                     }
                 }
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get('/editInterests', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
-        } else {
+        } else { //render edit interest page
             res.render('editInterests', {user: req.session.user});
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get("/delete/userint/:interest", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const uint = req.params.interest;
-            User.findOne({username: req.session.user.username}, (function(error, foundUser) {
+            User.findOne({username: req.session.user.username}, (function(error, foundUser) { //find user who is deleting their interest
                 if (error) {
                     console.log(error);
                 } else {
                     if(foundUser){
-                        foundUser.interests.remove(uint);
-                        foundUser.save(function (saveError){
+                        foundUser.interests.remove(uint); //remove interest from user interests array
+                        foundUser.save(function (saveError){ //save user to database
                             if(saveError){
                                 console.log(saveError);
                             }
                             else{
-                                req.session.user = foundUser;
-                                res.redirect('back');
+                                req.session.user = foundUser; //update the session user information
+                                res.redirect('back'); //redirect user to previous page
                             }
                         });
                     }   
@@ -575,80 +574,79 @@ app.get("/delete/userint/:interest", (req, res) => {
             }));
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 
 app.get('/followers/:username', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const username = req.params.username;
-            User.findOne({username: username}, function(error, foundUser) {
+            User.findOne({username: username}, function(error, foundUser) { //find user account in DB
                 if (error) {
                     console.log(error);
-                } else {
+                } else { //render followers page of the user
                     res.render('followers', {user: req.session.user, profileUser: foundUser});
                 }
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get('/following/:username', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const username = req.params.username;
-            User.findOne({username: username}, function(error, foundUser) {
-                if (error) {
+            User.findOne({username: username}, function(error, foundUser) { //find user account in DB
+                if (error) { 
                     console.log(error);
-                } else {
+                } else { //render following page of the user
                     res.render('following', {user: req.session.user, profileUser: foundUser});
                 }
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
-    
 });
 
 
 // User Interactions
 app.get("/follow/username/:username", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const username = req.params.username;
-            User.findOne({username: username}, function(error, foundUser) {
-                if (!foundUser.followers.includes(req.session.user.username)) {
+            User.findOne({username: username}, function(error, foundUser) { //find user to follow in DB
+                if (!foundUser.followers.includes(req.session.user.username)) { //add session user to list of followers of found user
                     foundUser.followers.push(req.session.user.username);
                 }
-                User.findOne({username: req.session.user.username}, function(err, foundClient) {
+                User.findOne({username: req.session.user.username}, function(err, foundClient) { //find session user account in DB
                     if (err) {
                         console.log(err);
                     }
                     else {
-                        if (foundClient) {
-                            if (!foundClient.following.includes(foundUser.username)) {
+                        if (foundClient) { //check session user exists in DB
+                            if (!foundClient.following.includes(foundUser.username)) { //add user to follow in list of following of session user
                                 foundClient.following.push(foundUser.username);
-                                foundClient.save(function (saveError) {
+                                foundClient.save(function (saveError) { //save session user to DB
                                     if (saveError) {
                                         console.log(saveError);
                                     } else {
-                                        foundUser.save(function (saveErr) {
+                                        foundUser.save(function (saveErr) { //save followed user to DB
                                             if (saveErr) {
                                                 console.log(saveErr);
                                             } else {
-                                                req.session.user = foundClient;
-                                                res.redirect('back');
+                                                req.session.user = foundClient; //update the session user information
+                                                res.redirect('back'); //redirect user to previous page
                                             }
                                         });
                                     }
@@ -663,38 +661,38 @@ app.get("/follow/username/:username", (req, res) => {
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get("/unfollow/username/:username", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const username = req.params.username;
-            User.findOne({username: username}, function(error, foundUser) {
-                if (foundUser.followers.includes(req.session.user.username)) {
+            User.findOne({username: username}, function(error, foundUser) { //find user to unfollow in DB
+                if (foundUser.followers.includes(req.session.user.username)) { //remove session user from list of followers of found user
                     foundUser.followers.remove(req.session.user.username);
                 }
-                User.findOne({username: req.session.user.username}, function(err, foundClient) {
+                User.findOne({username: req.session.user.username}, function(err, foundClient) { //find session user account in DB
                     if (err) {
                         console.log(err);
                     }
                     else {
-                        if (foundClient) {
-                            if (foundClient.following.includes(foundUser.username)) {
+                        if (foundClient) { //check session user exists in DB
+                            if (foundClient.following.includes(foundUser.username)) { //remove user to unfollow from list of following of session user
                                 foundClient.following.remove(foundUser.username);
-                                foundClient.save(function (saveError) {
+                                foundClient.save(function (saveError) { //save session user to DB
                                     if (saveError) {
                                         console.log(saveError);
                                     } else {
-                                        foundUser.save(function (saveErr) {
+                                        foundUser.save(function (saveErr) { //save unfollowed user to DB
                                             if (saveErr) {
                                                 console.log(saveErr);
                                             } else {
-                                                req.session.user = foundClient;
-                                                res.redirect('back');
+                                                req.session.user = foundClient; //update the session user information
+                                                res.redirect('back'); //redirect user to previous page
                                             }
                                         });
                                     }
@@ -708,7 +706,7 @@ app.get("/unfollow/username/:username", (req, res) => {
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
@@ -729,11 +727,11 @@ app.get("/unfollow/username/:username", (req, res) => {
 // });
 
 app.post("/makePost",(req,res)=> {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            if (req.body.interest == "Other") {
+            if (req.body.interest == "Other") { //check if interest of the post is "Other"
                 if (req.body.addInterest.length>0) {
                     Interest.countDocuments({name: req.body.addInterest}, function(error, count){
                         if (error) {
@@ -924,8 +922,7 @@ app.post("/makePost",(req,res)=> {
                         }
                     });
                 }
-            }
-            else {
+            } else { //create new post with given interest
                 const newPost = new Post({
                     author: req.body.username,
                     text: req.body.postContent,
@@ -936,12 +933,13 @@ app.post("/makePost",(req,res)=> {
                     isVisible: true,
                     isAnnouncement: false
                 });
-                User.findOne({username: req.session.user.username}, function(error, foundUser) {
+                User.findOne({username: req.session.user.username}, function(error, foundUser) { //find session user in DB
                     if (error) {
                         res.redirect('error');
                     } else {
-                        if (foundUser) {
+                        if (foundUser) { //check session user exists in DB
                             let newInterest = true;
+//Can't we just do an includes here?
                             for (let i = 0; i < foundUser.interests.length; i++) {
                                 if (foundUser.interests[i] == req.body.interest) {
                                     newInterest = false;
@@ -981,13 +979,13 @@ app.post("/makePost",(req,res)=> {
             }
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     } 
 });
 
 app.post("/makeAnnouncement",(req,res)=> {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             if (req.session.user.isAdmin) {
@@ -1176,79 +1174,78 @@ app.post("/makeAnnouncement",(req,res)=> {
             }
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     } 
 });
 
 
 // Interest Page
 app.get('/interest/:interest', (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            Post.find({isVisible: true, interest: req.params.interest}).exec(function(findPostError, foundPosts) {
+            Post.find({isVisible: true, interest: req.params.interest}).exec(function(findPostError, foundPosts) { //find posts tagged with given interest
                 if (findPostError) {
                     console.log(findPostError);
                 } else {
-                    authors = []
-                    for (post of foundPosts) {
+                    authors = [] //array containing authors of found posts
+                    for (post of foundPosts) { //find author of each post
                         authors.push(post.author);
                     }
-                    User.find({$or: [{username:{$in: authors}}, {interest: {$all: [req.params.interest]}}]}).exec(function(findUserError, foundUsers) {
+                    User.find({$or: [{username:{$in: authors}}, {interest: {$all: [req.params.interest]}}]}).exec(function(findUserError, foundUsers) { //find users tagged with given interest
                         if (findUserError) {
                             console.log(findUserError);
                         } else {
-                            res.render('interest', {user: req.session.user, pageInterest: req.params.interest, posts: foundPosts, users: foundUsers});
+                            res.render('interest', {user: req.session.user, pageInterest: req.params.interest, posts: foundPosts, users: foundUsers}); //render interest page
                         }
                     });
                 }
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 
 app.post("/searchPost", (req,res)=>{
    //db.posts.find({$text: {$search: "comment reply"}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}});
-   if (req.session.user) {
-        if (req.session.user.isBanned) {
+   if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            Post.find({$text: {$search: req.body.keywords}, author: {$ne: req.session.user.username}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}}).exec(function(findPostError, foundPosts) {
+            Post.find({$text: {$search: req.body.keywords}, author: {$ne: req.session.user.username}, isVisible: true}, {score: {$meta: "textScore"}}).sort({score: {$meta: "textScore"}}).exec(function(findPostError, foundPosts) { //find posts matching search conditions
                 if (findPostError) {
                     console.log(findPostError);
                 } else {
-                    res.render('searchPostResults', {user: req.session.user, keywords: req.body.keywords, posts: foundPosts});
+                    res.render('searchPostResults', {user: req.session.user, keywords: req.body.keywords, posts: foundPosts}); //render search post results page
                 }
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get("/viewPost/postId/:postId", (req,res)=>{
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const postId = req.params.postId;
-            Post.findOne({_id: mongoose.Types.ObjectId(postId)}).populate('comments').exec(function(err, post) {
+            Post.findOne({_id: mongoose.Types.ObjectId(postId)}).populate('comments').exec(function(err, post) { //find post with given ID in DB
                 if (err) {
                     console.log(err);
-                }
-                else {
+                } else {
                     if (post) {
-                        res.render('viewPost', {post: post, user: req.session.user});
+                        res.render('viewPost', {post: post, user: req.session.user}); //render post page
                     }
                 }
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
     
 });
@@ -1277,32 +1274,32 @@ app.get("/viewPost/postId/:postId", (req,res)=>{
 // });
 
 app.get("/like/postId/:postId", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.status(403).render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const user = req.session.user.username;
             const postId = req.params.postId;
-            if (!mongoose.Types.ObjectId.isValid(postId)) {
+            if (!mongoose.Types.ObjectId.isValid(postId)) { //check ID of given post is valid
                 res.status(400).render('error', {user: req.session.user});
             } else {
-                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) { //find post with given ID in DB
                     if (findPostError) {
                         console.log(findPostError);
                         res.status(500).render('error', {user: req.session.user});
                     } else {
-                        if (foundPost.dislikes.includes(user)) {
+                        if (foundPost.dislikes.includes(user)) { //remove username from dislikes of post if previously disliked
                             foundPost.dislikes.remove(user);
                         }
-                        if (!foundPost.likes.includes(user)) {
+                        if (!foundPost.likes.includes(user)) { //add username to likes of post if not previously liked
                             foundPost.likes.push(user);
                         }
-                        foundPost.save(function(saveError) {
+                        foundPost.save(function(saveError) { //save post to DB
                             if (saveError) {
                                 console.log(saveError);
                                 res.status(500).render('error', {user: req.session.user});
                             } else {
-                                res.redirect('back');
+                                res.redirect('back'); //load previous page
                             }
                         });
                     }
@@ -1315,29 +1312,29 @@ app.get("/like/postId/:postId", (req, res) => {
 });
 
 app.get("/unlike/postId/:postId", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.status(403).render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const user = req.session.user.username;
             const postId = req.params.postId;
-            if (!mongoose.Types.ObjectId.isValid(postId)) {
+            if (!mongoose.Types.ObjectId.isValid(postId)) { //check ID of given post is valid
                 res.status(400).render('error', {user: req.session.user});
             } else {
-                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) { //find post with given ID in DB
                     if (findPostError) {
                         console.log(findPostError);
                         res.status(500).render('error', {user: req.session.user});
                     } else {
-                        if (foundPost.likes.includes(user)) {
+                        if (foundPost.likes.includes(user)) { //remove username from likes of post if previously liked
                             foundPost.likes.remove(user);
                         }
-                        foundPost.save(function(saveError) {
+                        foundPost.save(function(saveError) { //save post to DB
                             if (saveError) {
                                 console.log(saveError);
                                 res.status(500).render('error', {user: req.session.user});
                             } else {
-                                res.redirect('back');
+                                res.redirect('back'); //load previous page
                             }
                         });
                     }
@@ -1350,32 +1347,32 @@ app.get("/unlike/postId/:postId", (req, res) => {
 });
 
 app.get("/dislike/postId/:postId", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.status(403).render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const user = req.session.user.username;
             const postId = req.params.postId;
-            if (!mongoose.Types.ObjectId.isValid(postId)) {
+            if (!mongoose.Types.ObjectId.isValid(postId)) { //check ID of given post is valid
                 res.status(400).render('error', {user: req.session.user});
             } else {
-                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) { //find post with given ID in DB
                     if (findPostError) {
                         console.log(findPostError);
                         res.status(500).render('error', {user: req.session.user});
                     } else {
-                        if (foundPost.likes.includes(user)) {
+                        if (foundPost.likes.includes(user)) { //remove username from likes of post if previously liked
                             foundPost.likes.remove(user);
                         }
-                        if (!foundPost.dislikes.includes(user)) {
+                        if (!foundPost.dislikes.includes(user)) { //add username to dislikes of post if not previously disliked
                             foundPost.dislikes.push(user);
                         }
-                        foundPost.save(function(saveError) {
+                        foundPost.save(function(saveError) { //save post to DB
                             if (saveError) {
                                 console.log(saveError);
                                 res.status(500).render('error', {user: req.session.user});
                             } else {
-                                res.redirect('back');
+                                res.redirect('back'); //load previous page
                             }
                         });
                     }
@@ -1388,29 +1385,29 @@ app.get("/dislike/postId/:postId", (req, res) => {
 });
 
 app.get("/undislike/postId/:postId", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.status(403).render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const user = req.session.user.username;
             const postId = req.params.postId;
-            if (!mongoose.Types.ObjectId.isValid(postId)) {
+            if (!mongoose.Types.ObjectId.isValid(postId)) { //check ID of given post is valid
                 res.status(400).render('error', {user: req.session.user});
             } else {
-                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(findPostError, foundPost) { //find post with given ID in DB
                     if (findPostError) {
                         console.log(findPostError);
                         res.status(500).render('error', {user: req.session.user});
                     } else {
-                        if (foundPost.dislikes.includes(user)) {
+                        if (foundPost.dislikes.includes(user)) { //remove username from dislikes of post if previously disliked
                             foundPost.dislikes.remove(user);
                         }
-                        foundPost.save(function(saveError) {
+                        foundPost.save(function(saveError) { //save post to DB
                             if (saveError) {
                                 console.log(saveError);
                                 res.status(500).render('error', {user: req.session.user});
                             } else {
-                                res.redirect('back');
+                                res.redirect('back'); //load previous page
                             }
                         });
                     }
@@ -1423,8 +1420,8 @@ app.get("/undislike/postId/:postId", (req, res) => {
 });
 
 app.post("/makeComment", (req,res)=>{
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             Post.findOne({_id: mongoose.Types.ObjectId(req.body.parentPost)}, function(error, post){
@@ -1452,13 +1449,13 @@ app.post("/makeComment", (req,res)=>{
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get("/delete/postId/:postId", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const postId = req.params.postId;
@@ -1483,14 +1480,14 @@ app.get("/delete/postId/:postId", (req, res) => {
             });
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
     
 });
 
 app.get("/report/postId/:postId", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const postId = req.params.postId;
@@ -1519,8 +1516,8 @@ app.get("/report/postId/:postId", (req, res) => {
 });
 
 app.get("/ignore/postId/:postId", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const postId = req.params.postId;
@@ -1540,15 +1537,15 @@ app.get("/ignore/postId/:postId", (req, res) => {
             }));
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 
 // Admin Functionalities
 app.get("/viewReportedPosts", (req,res)=>{
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             if (req.session.user.isAdmin) {
@@ -1564,13 +1561,13 @@ app.get("/viewReportedPosts", (req,res)=>{
             }
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get("/viewBannedUsers", (req, res)=> {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             if (req.session.user.isAdmin) {
@@ -1586,13 +1583,13 @@ app.get("/viewBannedUsers", (req, res)=> {
             }
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get("/ban/username/:username", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             if (req.session.user.isAdmin) {
@@ -1622,7 +1619,7 @@ app.get("/ban/username/:username", (req, res) => {
             }
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
@@ -1665,8 +1662,8 @@ app.get("/viewInterestSubmissions", (req,res)=>{
 });
 
 app.get("/approve/tag/:id", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             if (req.session.user.isAdmin) {
@@ -1682,13 +1679,13 @@ app.get("/approve/tag/:id", (req, res) => {
             }
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 app.get("/reject/tag/:id", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             if (req.session.user.isAdmin) {
@@ -1705,14 +1702,14 @@ app.get("/reject/tag/:id", (req, res) => {
             }
         }
     } else {
-        res.redirect('/');
+        res.redirect('/'); //no session user so redirect to landing page
     }
 });
 
 
 app.all("*", (req, res) => {
-    if (req.session.user) {
-        if (req.session.user.isBanned) {
+    if (req.session.user) { //make sure session user exists
+        if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             res.render('error', {user: req.session.user});
