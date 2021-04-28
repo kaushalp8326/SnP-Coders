@@ -6,7 +6,6 @@ const express = require('express');
 var session = require('client-sessions');
 const app = express();
 const saltRounds = 11;
-const port = 6969;
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -17,8 +16,6 @@ app.use(session({           //setting up client session
     duration: 30 * 60 * 1000,         //user will be auto logged out if they do not log in for this duration
     activeDuration: 5 * 60 * 1000,      //user will be auto logged out if they are inactive on the page for this duration
   }));
-
-// module.exports = app;
 
 
 mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', {useNewUrlParser: true, useUnifiedTopology: true});
@@ -172,15 +169,13 @@ app.get('/login', (req, res) => {
 
 // Login function
 app.post("/login", (req,res)=> { 
-    const email = req.body.email; //get request email
-    const password = req.body.password; //get request password
-    User.findOne({email: email}, function(findUserError, foundUser){ //find user account in DB
+    User.findOne({email: req.body.email}, function(findUserError, foundUser){ //find user account in DB
         if (findUserError) {
             console.log(findUserError); //if error, log error and redirect to login
             res.redirect('login');
         } else {
             if (foundUser) { //if user is found in DB
-                bcrypt.compare(password, foundUser.password, function(compareError, result) {//hash password and compare
+                bcrypt.compare(req.body.password, foundUser.password, function(compareError, result) {//hash password and compare
                     if (compareError) { 
                         console.log(compareError);
                         res.redirect('login');
@@ -726,46 +721,322 @@ app.get("/unfollow/username/:username", (req, res) => {
 //     }
 // });
 
+// app.post("/makePost",(req,res)=> {
+//     if (req.session.user) { //make sure session user exists
+//         if (req.session.user.isBanned) { //if banned, render banned page
+//             res.render('ban', {user: req.session.user, banned: req.session.user});
+//         } else {
+//             if (req.body.interest == "Other") { //check if interest of the post is "Other"
+//                 if (req.body.addInterest.length>0) {
+//                     Interest.countDocuments({name: req.body.addInterest}, function(error, count){
+//                         if (error) {
+//                             console.log(error);
+//                         } else if (count > 0){
+//                             const newPost = new Post({
+//                                 author: req.body.username,
+//                                 text: req.body.postContent,
+//                                 interest: req.body.addInterest,
+//                                 master: true,
+//                                 date: new Date(),
+//                                 isReported: false,
+//                                 isVisible: true,
+//                                 isAnnouncement: false
+//                             });
+//                             User.findOne({username: req.session.user.username}, function(erro, foundUser) {
+//                                 if (erro) {
+//                                     res.redirect('error');
+//                                 } else {
+//                                     if (foundUser) {
+//                                         let newInterest = true;
+//                                         for (let i = 0; i < foundUser.interests.length; i++) {
+//                                             if (foundUser.interests[i] == req.body.interest) {
+//                                                 newInterest = false;
+//                                                 break;
+//                                             }
+//                                         }
+//                                         if (newInterest) {
+//                                             foundUser.interests.push(req.body.interest);
+//                                             foundUser.save(function (err) {
+//                                                 if (err) {
+//                                                     res.redirect('error');
+//                                                 } else {
+//                                                     req.session.user = foundUser;
+//                                                     newPost.save(function(saveError) {
+//                                                         if (saveError) {
+//                                                             console.log(saveError);
+//                                                         } else {
+//                                                             res.redirect('profile');
+//                                                         }
+//                                                     });
+//                                                 }
+//                                             });
+//                                         } else {
+//                                             newPost.save(function(saveError) {
+//                                                 if (saveError) {
+//                                                     console.log(saveError);
+//                                                 } else {
+//                                                     res.redirect('profile');
+//                                                 }
+//                                             });
+//                                         }
+//                                     } else {
+//                                         res.redirect('error');
+//                                     }
+//                                 }
+//                             });
+//                         } else {
+//                             //add tag
+//                             if (req.session.user.isAdmin){
+//                                 //auto approve interests submitted by admins
+//                                 const addInterest = new Interest({
+//                                     name: req.body.addInterest,
+//                                     approved: true
+//                                 });
+//                                 addInterest.save(function(saveError) {
+//                                     if(saveError){
+//                                         console.log(saveError);
+//                                     }else{
+//                                         const newPost = new Post({
+//                                             author: req.body.username,
+//                                             text: req.body.postContent,
+//                                             interest: req.body.addInterest,
+//                                             master: true,
+//                                             date: new Date(),
+//                                             isReported: false,
+//                                             isVisible: true,
+//                                             isAnnouncement: false
+//                                         });
+//                                         User.findOne({username: req.session.user.username}, function(erro, foundUser) {
+//                                             if (erro) {
+//                                                 res.redirect('error');
+//                                             } else {
+//                                                 if (foundUser) {
+//                                                     let newInterest = true;
+//                                                     for (let i = 0; i < foundUser.interests.length; i++) {
+//                                                         if (foundUser.interests[i] == req.body.addInterest) {
+//                                                             newInterest = false;
+//                                                             break;
+//                                                         }
+//                                                     }
+//                                                     if (newInterest) {
+//                                                         foundUser.interests.push(req.body.addInterest);
+//                                                         foundUser.save(function (err) {
+//                                                             if (err) {
+//                                                                 res.redirect('error');
+//                                                             } else {
+//                                                                 req.session.user = foundUser;
+//                                                                 newPost.save(function(saveErro) {
+//                                                                     if (saveErro) {
+//                                                                         console.log(saveErro);
+//                                                                     } else {
+//                                                                         res.redirect('profile');
+//                                                                     }
+//                                                                 });
+//                                                             }
+//                                                         });
+//                                                     } else {
+//                                                         newPost.save(function(saveErro) {
+//                                                             if (saveErro) {
+//                                                                 console.log(saveErro);
+//                                                             } else {
+//                                                                 res.redirect('profile');
+//                                                             }
+//                                                         });
+//                                                     }
+//                                                 } else {
+//                                                     res.redirect('error');
+//                                                 }
+//                                             }
+//                                         });
+//                                     }
+//                                 });
+//                             } else {
+//                                 const addInterest = new Interest({
+//                                     name: req.body.addInterest,
+//                                     approved: false
+//                                 });
+//                                 addInterest.save(function(saveError) {
+//                                     if(saveError){
+//                                         console.log(saveError);
+//                                     }else{
+//                                         const newPost = new Post({
+//                                             author: req.body.username,
+//                                             text: req.body.postContent,
+//                                             interest: req.body.addInterest,
+//                                             master: true,
+//                                             date: new Date(),
+//                                             isReported: false,
+//                                             isVisible: true,
+//                                             isAnnouncement: false
+//                                         });
+//                                         User.findOne({username: req.session.user.username}, function(erro, foundUser) {
+//                                             if (erro) {
+//                                                 res.redirect('error');
+//                                             } else {
+//                                                 if (foundUser) {
+//                                                     let newInterest = true;
+//                                                     for (let i = 0; i < foundUser.interests.length; i++) {
+//                                                         if (foundUser.interests[i] == req.body.interest) {
+//                                                             newInterest = false;
+//                                                             break;
+//                                                         }
+//                                                     }
+//                                                     if (newInterest) {
+//                                                         foundUser.interests.push(req.body.interest);
+//                                                         foundUser.save(function (err) {
+//                                                             if (err) {
+//                                                                 res.redirect('error');
+//                                                             } else {
+//                                                                 req.session.user = foundUser;
+//                                                                 newPost.save(function(saveErro) {
+//                                                                     if (saveErro) {
+//                                                                         console.log(saveErro);
+//                                                                     } else {
+//                                                                         res.redirect('profile');
+//                                                                     }
+//                                                                 });
+//                                                             }
+//                                                         });
+//                                                     } else {
+//                                                         newPost.save(function(saveErro) {
+//                                                             if (saveErro) {
+//                                                                 console.log(saveErro);
+//                                                             } else {
+//                                                                 res.redirect('profile');
+//                                                             }
+//                                                         });
+//                                                     }
+//                                                 } else {
+//                                                     res.redirect('error');
+//                                                 }
+//                                             }
+//                                         });
+//                                     }
+//                                 });
+//                             }
+//                         }
+//                     });
+//                 }
+//             } else { //create new post with given interest
+//                 const newPost = new Post({
+//                     author: req.body.username,
+//                     text: req.body.postContent,
+//                     interest: req.body.interest,
+//                     master: true,
+//                     date: new Date(),
+//                     isReported: false,
+//                     isVisible: true,
+//                     isAnnouncement: false
+//                 });
+//                 User.findOne({username: req.session.user.username}, function(error, foundUser) { //find session user in DB
+//                     if (error) {
+//                         res.redirect('error');
+//                     } else {
+//                         if (foundUser) { //check session user exists in DB
+//                             let newInterest = true;
+// //Can't we just do an includes here?
+//                             for (let i = 0; i < foundUser.interests.length; i++) {
+//                                 if (foundUser.interests[i] == req.body.interest) {
+//                                     newInterest = false;
+//                                     break;
+//                                 }
+//                             }
+//                             if (newInterest) {
+//                                 foundUser.interests.push(req.body.interest);
+//                                 foundUser.save(function (err) {
+//                                     if (err) {
+//                                         res.redirect('error');
+//                                     } else {
+//                                         req.session.user = foundUser;
+//                                         newPost.save(function(saveError) {
+//                                             if (saveError) {
+//                                                 console.log(saveError);
+//                                             } else {
+//                                                 res.redirect('profile');
+//                                             }
+//                                         });
+//                                     }
+//                                 });
+//                             } else {
+//                                 newPost.save(function(saveError) {
+//                                     if (saveError) {
+//                                         console.log(saveError);
+//                                     } else {
+//                                         res.redirect('profile');
+//                                     }
+//                                 });
+//                             }
+//                         } else {
+//                             res.redirect('error');
+//                         }
+//                     }
+//                 });
+//             }
+//         }
+//     } else {
+//         res.redirect('/'); //no session user so redirect to landing page
+//     } 
+// });
+
 app.post("/makePost",(req,res)=> {
     if (req.session.user) { //make sure session user exists
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             if (req.body.interest == "Other") { //check if interest of the post is "Other"
-                if (req.body.addInterest.length>0) {
-                    Interest.countDocuments({name: req.body.addInterest}, function(error, count){
-                        if (error) {
-                            console.log(error);
-                        } else if (count > 0){
-                            const newPost = new Post({
-                                author: req.body.username,
-                                text: req.body.postContent,
-                                interest: req.body.addInterest,
-                                master: true,
-                                date: new Date(),
-                                isReported: false,
-                                isVisible: true,
-                                isAnnouncement: false
-                            });
-                            User.findOne({username: req.session.user.username}, function(erro, foundUser) {
-                                if (erro) {
-                                    res.redirect('error');
-                                } else {
-                                    if (foundUser) {
-                                        let newInterest = true;
-                                        for (let i = 0; i < foundUser.interests.length; i++) {
-                                            if (foundUser.interests[i] == req.body.interest) {
-                                                newInterest = false;
-                                                break;
-                                            }
-                                        }
-                                        if (newInterest) {
-                                            foundUser.interests.push(req.body.interest);
-                                            foundUser.save(function (err) {
-                                                if (err) {
-                                                    res.redirect('error');
+                if (req.body.addInterest.length == 0) {
+                    res.redirect('error');
+                } else {
+                    const newPost = new Post({
+                        author: req.body.username,
+                        text: req.body.postContent,
+                        interest: req.body.addInterest,
+                        master: true,
+                        date: new Date(),
+                        isReported: false,
+                        isVisible: true,
+                        isAnnouncement: false
+                    });
+                    User.findOne({username: req.session.user.username}, function(erro, foundUser) {
+                        if (erro) {
+                            res.redirect('error');
+                        } else {
+                            if (foundUser) {
+                                if (!foundUser.interests.includes[req.body.addinterest]) {
+                                    foundUser.interests.push(req.body.addinterest);
+                                }
+                                foundUser.save(function (err) {
+                                    if (err) {
+                                        res.redirect('error');
+                                    } else {
+                                        req.session.user = foundUser;
+                                        Interest.countDocuments({name: req.body.addInterest}, function(error, count) {
+                                            if (error) {
+                                                console.log(error);
+                                            } else {
+                                                if (count == 0) {
+                                                    //add tag
+                                                    const addInterest = new Interest({
+                                                        name: req.body.addInterest,
+                                                        approved: false
+                                                    });
+                                                    if (req.session.user.isAdmin) {
+                                                        addInterest.approved = true; //auto approve interests submitted by admins
+                                                    }
+                                                    addInterest.save(function(saveError) {
+                                                        if (saveError) {
+                                                            console.log(saveError);
+                                                        } else {
+                                                            newPost.save(function(saveError) {
+                                                                if (saveError) {
+                                                                    console.log(saveError);
+                                                                } else {
+                                                                    res.redirect('profile');
+                                                                }
+                                                            });
+                                                        }
+                                                    });
                                                 } else {
-                                                    req.session.user = foundUser;
                                                     newPost.save(function(saveError) {
                                                         if (saveError) {
                                                             console.log(saveError);
@@ -774,150 +1045,12 @@ app.post("/makePost",(req,res)=> {
                                                         }
                                                     });
                                                 }
-                                            });
-                                        } else {
-                                            newPost.save(function(saveError) {
-                                                if (saveError) {
-                                                    console.log(saveError);
-                                                } else {
-                                                    res.redirect('profile');
-                                                }
-                                            });
-                                        }
-                                    } else {
-                                        res.redirect('error');
-                                    }
-                                }
-                            });
-                        } else {
-                            //add tag
-                            if (req.session.user.isAdmin){
-                                //auto approve interests submitted by admins
-                                const addInterest = new Interest({
-                                    name: req.body.addInterest,
-                                    approved: true
-                                });
-                                addInterest.save(function(saveError) {
-                                    if(saveError){
-                                        console.log(saveError);
-                                    }else{
-                                        const newPost = new Post({
-                                            author: req.body.username,
-                                            text: req.body.postContent,
-                                            interest: req.body.addInterest,
-                                            master: true,
-                                            date: new Date(),
-                                            isReported: false,
-                                            isVisible: true,
-                                            isAnnouncement: false
-                                        });
-                                        User.findOne({username: req.session.user.username}, function(erro, foundUser) {
-                                            if (erro) {
-                                                res.redirect('error');
-                                            } else {
-                                                if (foundUser) {
-                                                    let newInterest = true;
-                                                    for (let i = 0; i < foundUser.interests.length; i++) {
-                                                        if (foundUser.interests[i] == req.body.addInterest) {
-                                                            newInterest = false;
-                                                            break;
-                                                        }
-                                                    }
-                                                    if (newInterest) {
-                                                        foundUser.interests.push(req.body.addInterest);
-                                                        foundUser.save(function (err) {
-                                                            if (err) {
-                                                                res.redirect('error');
-                                                            } else {
-                                                                req.session.user = foundUser;
-                                                                newPost.save(function(saveErro) {
-                                                                    if (saveErro) {
-                                                                        console.log(saveErro);
-                                                                    } else {
-                                                                        res.redirect('profile');
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                    } else {
-                                                        newPost.save(function(saveErro) {
-                                                            if (saveErro) {
-                                                                console.log(saveErro);
-                                                            } else {
-                                                                res.redirect('profile');
-                                                            }
-                                                        });
-                                                    }
-                                                } else {
-                                                    res.redirect('error');
-                                                }
                                             }
                                         });
                                     }
                                 });
                             } else {
-                                const addInterest = new Interest({
-                                    name: req.body.addInterest,
-                                    approved: false
-                                });
-                                addInterest.save(function(saveError) {
-                                    if(saveError){
-                                        console.log(saveError);
-                                    }else{
-                                        const newPost = new Post({
-                                            author: req.body.username,
-                                            text: req.body.postContent,
-                                            interest: req.body.addInterest,
-                                            master: true,
-                                            date: new Date(),
-                                            isReported: false,
-                                            isVisible: true,
-                                            isAnnouncement: false
-                                        });
-                                        User.findOne({username: req.session.user.username}, function(erro, foundUser) {
-                                            if (erro) {
-                                                res.redirect('error');
-                                            } else {
-                                                if (foundUser) {
-                                                    let newInterest = true;
-                                                    for (let i = 0; i < foundUser.interests.length; i++) {
-                                                        if (foundUser.interests[i] == req.body.interest) {
-                                                            newInterest = false;
-                                                            break;
-                                                        }
-                                                    }
-                                                    if (newInterest) {
-                                                        foundUser.interests.push(req.body.interest);
-                                                        foundUser.save(function (err) {
-                                                            if (err) {
-                                                                res.redirect('error');
-                                                            } else {
-                                                                req.session.user = foundUser;
-                                                                newPost.save(function(saveErro) {
-                                                                    if (saveErro) {
-                                                                        console.log(saveErro);
-                                                                    } else {
-                                                                        res.redirect('profile');
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                    } else {
-                                                        newPost.save(function(saveErro) {
-                                                            if (saveErro) {
-                                                                console.log(saveErro);
-                                                            } else {
-                                                                res.redirect('profile');
-                                                            }
-                                                        });
-                                                    }
-                                                } else {
-                                                    res.redirect('error');
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
+                                res.redirect('error');
                             }
                         }
                     });
@@ -938,39 +1071,23 @@ app.post("/makePost",(req,res)=> {
                         res.redirect('error');
                     } else {
                         if (foundUser) { //check session user exists in DB
-                            let newInterest = true;
-//Can't we just do an includes here?
-                            for (let i = 0; i < foundUser.interests.length; i++) {
-                                if (foundUser.interests[i] == req.body.interest) {
-                                    newInterest = false;
-                                    break;
-                                }
-                            }
-                            if (newInterest) {
+                            if (!foundUser.interests.includes[req.body.interest]) {
                                 foundUser.interests.push(req.body.interest);
-                                foundUser.save(function (err) {
-                                    if (err) {
-                                        res.redirect('error');
-                                    } else {
-                                        req.session.user = foundUser;
-                                        newPost.save(function(saveError) {
-                                            if (saveError) {
-                                                console.log(saveError);
-                                            } else {
-                                                res.redirect('profile');
-                                            }
-                                        });
-                                    }
-                                });
-                            } else {
-                                newPost.save(function(saveError) {
-                                    if (saveError) {
-                                        console.log(saveError);
-                                    } else {
-                                        res.redirect('profile');
-                                    }
-                                });
                             }
+                            foundUser.save(function (err) {
+                                if (err) {
+                                    res.redirect('error');
+                                } else {
+                                    req.session.user = foundUser;
+                                    newPost.save(function(saveError) {
+                                        if (saveError) {
+                                            console.log(saveError);
+                                        } else {
+                                            res.redirect('profile');
+                                        }
+                                    });
+                                }
+                            });
                         } else {
                             res.redirect('error');
                         }
