@@ -403,11 +403,11 @@ app.get('/popular', (req, res) => {
                     for (let post of foundPosts) {
                         authors.push(post.author);
                     }
-                    User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) {
+                    User.find({username:{$in: authors}}).exec(function(findUserError, foundUsers) { //find usernames in authors list
                         if (findUserError) {
                             console.log(findUserError);
                         } else {
-                            Interest.find({approved: true}).exec(function (findInterestError, foundInterests) {
+                            Interest.find({approved: true}).exec(function (findInterestError, foundInterests) { //find approved interests
                                 if (findInterestError) {
                                     res.redirect('error');
                                 } else {
@@ -988,14 +988,14 @@ app.post("/makeAnnouncement",(req,res)=> {
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            if (req.session.user.isAdmin) {
-                if (req.body.interest == "Other") {
+            if (req.session.user.isAdmin) { //check if user is the admin
+                if (req.body.interest == "Other") { //if the interest category is other
                     if (req.body.addInterest.length>0) {
-                        Interest.countDocuments({name: req.body.addInterest}, function(error, count){
+                        Interest.countDocuments({name: req.body.addInterest}, function(error, count){ //count number of interests with this name
                             if (error) {
                                 console.log(error);
-                            } else if (count > 0){
-                                const newPost = new Post({
+                            } else if (count > 0){ //if the count is more than 0
+                                const newPost = new Post({ //create a new announcement for this interest
                                     author: req.body.username,
                                     text: req.body.postContent,
                                     interest: req.body.addInterest,
@@ -1005,26 +1005,26 @@ app.post("/makeAnnouncement",(req,res)=> {
                                     isVisible: true,
                                     isAnnouncement: true
                                 });
-                                User.findOne({username: req.session.user.username}, function(erro, foundUser) {
+                                User.findOne({username: req.session.user.username}, function(erro, foundUser) { //find the user in database
                                     if (erro) {
                                         res.redirect('error');
                                     } else {
-                                        if (foundUser) {
+                                        if (foundUser) { //add this interest to the user if it does not currently exist
                                             let newInterest = true;
-                                            for (let i = 0; i < foundUser.interests.length; i++) {
+                                            for (let i = 0; i < foundUser.interests.length; i++) {  //checks if interest already exists for user
                                                 if (foundUser.interests[i] == req.body.interest) {
                                                     newInterest = false;
                                                     break;
                                                 }
                                             }
-                                            if (newInterest) {
-                                                foundUser.interests.push(req.body.interest);
+                                            if (newInterest) { //interest is a new interest for the user
+                                                foundUser.interests.push(req.body.interest); //add to list of interests
                                                 foundUser.save(function (err) {
                                                     if (err) {
                                                         res.redirect('error');
                                                     } else {
                                                         req.session.user = foundUser;
-                                                        newPost.save(function(saveError) {
+                                                        newPost.save(function(saveError) { //save post to db
                                                             if (saveError) {
                                                                 console.log(saveError);
                                                             } else {
@@ -1034,7 +1034,7 @@ app.post("/makeAnnouncement",(req,res)=> {
                                                     }
                                                 });
                                             } else {
-                                                newPost.save(function(saveError) {
+                                                newPost.save(function(saveError) { //save post to db
                                                     if (saveError) {
                                                         console.log(saveError);
                                                     } else {
@@ -1047,16 +1047,16 @@ app.post("/makeAnnouncement",(req,res)=> {
                                         }
                                     }
                                 });
-                            } else {
-                                const addInterest = new Interest({
+                            } else { //there are no interests at the moment, so auto add to approved
+                                const addInterest = new Interest({ //add new Interest and set to approved
                                     name: req.body.addInterest,
                                     approved: true
                                 });
-                                addInterest.save(function(saveError) {
+                                addInterest.save(function(saveError) { //save to database
                                     if(saveError){
                                         console.log(saveError);
                                     }else{
-                                        const newPost = new Post({
+                                        const newPost = new Post({ //make new post
                                             author: req.body.username,
                                             text: req.body.postContent,
                                             interest: req.body.addInterest,
@@ -1066,13 +1066,13 @@ app.post("/makeAnnouncement",(req,res)=> {
                                             isVisible: true,
                                             isAnnouncement: true
                                         });
-                                        User.findOne({username: req.session.user.username}, function(erro, foundUser) {
+                                        User.findOne({username: req.session.user.username}, function(erro, foundUser) { //find user from db
                                             if (erro) {
                                                 res.redirect('error');
                                             } else {
-                                                if (foundUser) {
+                                                if (foundUser) {//adds this to the user's interests if it does not exist already
                                                     let newInterest = true;
-                                                    for (let i = 0; i < foundUser.interests.length; i++) {
+                                                    for (let i = 0; i < foundUser.interests.length; i++) { 
                                                         if (foundUser.interests[i] == req.body.addInterest) {
                                                             newInterest = false;
                                                             break;
@@ -1115,8 +1115,8 @@ app.post("/makeAnnouncement",(req,res)=> {
                         });
                     }
                 }
-                else {
-                    const newPost = new Post({
+                else { //this is not a new interest category
+                    const newPost = new Post({ //create new post/announcement
                         author: req.body.username,
                         text: req.body.postContent,
                         interest: req.body.interest,
@@ -1126,11 +1126,11 @@ app.post("/makeAnnouncement",(req,res)=> {
                         isVisible: true,
                         isAnnouncement: true
                     });
-                    User.findOne({username: req.session.user.username}, function(error, foundUser) {
+                    User.findOne({username: req.session.user.username}, function(error, foundUser) { //find user in db
                         if (error) {
                             res.redirect('error');
                         } else {
-                            if (foundUser) {
+                            if (foundUser) { //add to their current interest if it does not exist already
                                 let newInterest = true;
                                 for (let i = 0; i < foundUser.interests.length; i++) {
                                     if (foundUser.interests[i] == req.body.interest) {
@@ -1145,7 +1145,7 @@ app.post("/makeAnnouncement",(req,res)=> {
                                             res.redirect('error');
                                         } else {
                                             req.session.user = foundUser;
-                                            newPost.save(function(saveError) {
+                                            newPost.save(function(saveError) { //save changes in db
                                                 if (saveError) {
                                                     console.log(saveError);
                                                 } else {
@@ -1155,7 +1155,7 @@ app.post("/makeAnnouncement",(req,res)=> {
                                         }
                                     });
                                 } else {
-                                    newPost.save(function(saveError) {
+                                    newPost.save(function(saveError) { //save changes in db
                                         if (saveError) {
                                             console.log(saveError);
                                         } else {
@@ -1233,7 +1233,7 @@ app.get("/viewPost/postId/:postId", (req,res)=>{
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            const postId = req.params.postId;
+            const postId = req.params.postId; //get post id
             Post.findOne({_id: mongoose.Types.ObjectId(postId)}).populate('comments').exec(function(err, post) { //find post with given ID in DB
                 if (err) {
                     console.log(err);
@@ -1250,28 +1250,6 @@ app.get("/viewPost/postId/:postId", (req,res)=>{
     
 });
 
-// Deprecated?
-// app.post('/viewPost', (req, res) => {
-//     if (req.session.user) {
-//         if (req.session.user.isBanned) {
-//             res.render('ban', {user: req.session.user, banned: req.session.user});
-//         } else {
-//             const user = req.body.user;
-//             const postId = req.body.postId; 
-//             Post.findOne({_id: mongoose.Types.ObjectId(postId)}, function(findPostError, foundPost) {
-//                 if (findPostError) {
-//                     console.log(findPostError);
-//                 } else {
-//                     if (foundPost) {
-//                         res.render('post', {postJSON: foundPost, user: user});
-//                     }
-//                 }  
-//             });
-//         }
-//     } else {
-//         res.redirect('/');
-//     }
-// });
 
 app.get("/like/postId/:postId", (req, res) => {
     if (req.session.user) { //make sure session user exists
@@ -1424,14 +1402,14 @@ app.post("/makeComment", (req,res)=>{
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            Post.findOne({_id: mongoose.Types.ObjectId(req.body.parentPost)}, function(error, post){
+            Post.findOne({_id: mongoose.Types.ObjectId(req.body.parentPost)}, function(error, post){ //find parent post in db 
                 if (error){
                     console.log(error);
                     res.redirect('error');
                 }
                 else {
-                    if (post) {
-                        const newPost = new Post({
+                    if (post) { //if parent post exists, we can comment
+                        const newPost = new Post({ //new post
                             author: req.body.username,
                             text: req.body.postContent,
                             interest: post.interest,
@@ -1440,9 +1418,9 @@ app.post("/makeComment", (req,res)=>{
                             isReported: false,
                             isVisible: true
                         });
-                        newPost.save();
-                        post.comments.push(newPost);
-                        post.save();
+                        newPost.save(); //save to db
+                        post.comments.push(newPost); //add to parent post's comments list
+                        post.save(); //save changes to db
                         res.redirect("back");
                     }
                 }
@@ -1458,16 +1436,16 @@ app.get("/delete/postId/:postId", (req, res) => {
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            const postId = req.params.postId;
-            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, function(error, post){
+            const postId = req.params.postId; //get postId from params
+            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, function(error, post){ //find post in database
                 if (error){
                     console.log(error);
                     res.redirect('error');
                 }
                 else {
-                    if (post) {
-                        if (req.session.user.username == post.author || req.session.user.isAdmin) {
-                            Post.deleteOne({_id: mongoose.Types.ObjectId(postId)}, (function(deletePostError) {
+                    if (post) { //if post exists
+                        if (req.session.user.username == post.author || req.session.user.isAdmin) { //it is the post author or an admin
+                            Post.deleteOne({_id: mongoose.Types.ObjectId(postId)}, (function(deletePostError) { //delete from db
                                 if (deletePostError) {
                                     console.log(deletePostError);
                                 } else {
@@ -1490,16 +1468,16 @@ app.get("/report/postId/:postId", (req, res) => {
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            const postId = req.params.postId;
+            const postId = req.params.postId; //post id in params
             if (!mongoose.Types.ObjectId.isValid(postId)) {
                 res.status(400).render('error', {user: req.session.user});
             } else {
-                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(reportPostError, reportPost) {
+                Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(reportPostError, reportPost) { //find reported post
                     if (reportPostError) {
                         console.log(reportPostError);
                     } else {
-                        reportPost.isReported=true;
-                        reportPost.save(function(saveError) {
+                        reportPost.isReported=true; //set isReported to true
+                        reportPost.save(function(saveError) { //save to database
                             if (saveError) {
                                 console.log(saveError);
                             } else {
@@ -1521,12 +1499,12 @@ app.get("/ignore/postId/:postId", (req, res) => {
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
             const postId = req.params.postId;
-            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(reportPostError, reportPost) {
+            Post.findOne({_id: mongoose.Types.ObjectId(postId)}, (function(reportPostError, reportPost) {//find post 
                 if (reportPostError) {
                     console.log(reportPostError);
                 } else {
-                    reportPost.isReported=false;
-                    reportPost.save(function(saveError) {
+                    reportPost.isReported=false; //set reported to false
+                    reportPost.save(function(saveError) {//save to database
                         if (saveError) {
                             console.log(saveError);
                         } else {
@@ -1548,12 +1526,12 @@ app.get("/viewReportedPosts", (req,res)=>{
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            if (req.session.user.isAdmin) {
-                Post.find({isReported: true}).sort({date: -1}).exec(function(findPostError, foundPosts) {
+            if (req.session.user.isAdmin) { //admin check
+                Post.find({isReported: true}).sort({date: -1}).exec(function(findPostError, foundPosts) { //find all posts that are reported
                     if (findPostError) {
                         console.log(findPostError);
                     } else {
-                        res.render('reportedPosts', {user: req.session.user, posts: foundPosts});
+                        res.render('reportedPosts', {user: req.session.user, posts: foundPosts}); //render reported posts page
                     }
                 });
             } else {
@@ -1570,12 +1548,12 @@ app.get("/viewBannedUsers", (req, res)=> {
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            if (req.session.user.isAdmin) {
-                User.find({isBanned: {$eq: true}}).exec(function(findPostError, foundUsers) {
+            if (req.session.user.isAdmin) { //check for admin permission
+                User.find({isBanned: {$eq: true}}).exec(function(findPostError, foundUsers) { //find all users that are banned
                     if (findPostError) {
                         console.log(findPostError);
                     } else {
-                        res.render('bannedUsers', {user: req.session.user, users: foundUsers});
+                        res.render('bannedUsers', {user: req.session.user, users: foundUsers}); //render bannedUsers page
                     }
                 });
             } else {
@@ -1592,18 +1570,18 @@ app.get("/ban/username/:username", (req, res) => {
         if (req.session.user.isBanned) { //if banned, render banned page
             res.render('ban', {user: req.session.user, banned: req.session.user});
         } else {
-            if (req.session.user.isAdmin) {
+            if (req.session.user.isAdmin) { //if user is admin 
                 const username = req.params.username;
-                    User.findOne({username: username}, function(error, foundUser) {
-                        foundUser.isBanned = true;
+                    User.findOne({username: username}, function(error, foundUser) { //find user to ban
+                        foundUser.isBanned = true; //set banned to true
                         foundUser.save(function (saveErr) {
                             if (saveErr) {
                                 console.log(saveErr);
                             } else {
-                                Post.find({author: username}, function(findPostError, foundPosts) {
+                                Post.find({author: username}, function(findPostError, foundPosts) {//search for user's posts and set to not visible
                                     foundPosts.forEach(function(post) {
                                         post.isVisible = false;
-                                        post.save(function(postSaveErr) {
+                                        post.save(function(postSaveErr) { //save in database
                                             if (postSaveErr) {
                                                 console.log(postSaveErr);
                                             }
@@ -1623,21 +1601,21 @@ app.get("/ban/username/:username", (req, res) => {
     }
 });
 
-app.get("/unban/username/:username", (req, res) => {
+app.get("/unban/username/:username", (req, res) => { //unbans user
     if (req.session.user.isAdmin) {
         const username = req.params.username;
-        User.findOne({username: username}, function(error, foundUser) {
-            foundUser.isBanned = false;
-            foundUser.save(function (saveErr) {
+        User.findOne({username: username}, function(error, foundUser) { //find user by that username
+            foundUser.isBanned = false; //set isBanned to false
+            foundUser.save(function (saveErr) { //save change in database
                 if (saveErr) {
                     console.log(saveErr);
                 } else {
-                    Post.find({author: username}, function(findPostError, foundPosts) {
+                    Post.find({author: username}, function(findPostError, foundPosts) { //set all posts to visible for user
                         foundPosts.forEach(function(post) {
                             post.isVisible = true;
-                            post.save(function(postSaveErr) {
+                            post.save(function(postSaveErr) { //save changes to database
                                 if (postSaveErr) {
-                                    console.log(postSaveErr);
+                                    console.log(postSaveErr); 
                                 }
                             });
                         });
@@ -1651,12 +1629,12 @@ app.get("/unban/username/:username", (req, res) => {
     }
 });
 
-app.get("/viewInterestSubmissions", (req,res)=>{
-    Interest.find({approved: false}, function(error, foundTags){
+app.get("/viewInterestSubmissions", (req,res)=>{ //views all submissions for new interests
+    Interest.find({approved: false}, function(error, foundTags){  //views all interests that are not approved
         if(error){
             console.log(error);
         }else{
-            res.render('viewInterestSubmissions', {user: req.session.user, tags: foundTags});
+            res.render('viewInterestSubmissions', {user: req.session.user, tags: foundTags}); //renders page
         }
     });
 });
