@@ -1,3 +1,4 @@
+// Import Dependencies
 const bcrypt = require('bcrypt');
 const isImageUrl = require('is-image-url');
 const mongoose = require('mongoose');
@@ -7,6 +8,7 @@ var session = require('client-sessions');
 const app = express();
 const saltRounds = 11;
 
+// Set up environment for express server
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -18,8 +20,8 @@ app.use(session({           //setting up client session
 }));
 
 
+// Set up environment for and connect to MongoDB Sever
 mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', { useNewUrlParser: true, useUnifiedTopology: true });
-
 
 const userSchema = { //schema in MongoDB for user
     username: String,   //username 
@@ -60,29 +62,26 @@ const Interest = new mongoose.model('Interest', interestSchema);
 
 
 // HTTP Response Status Codes
+const badRequest = 400;
 const unauthorized = 401;
 const forbidden = 403;
+const notFound = 404;
+const notAcceptable = 406
 const internalServerError = 500;
 
 
-// Landing Page
+// Handle HTTP Requests from client
+// Landing page
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-
-// Error Page
-app.get('/error', (req, res) => {
-    res.render('error', { user: req.session.user });
-});
-
-
-// Register Pages
+// Register page
 app.get('/register', (req, res) => {
     res.render('register', { registerFail: [] });
 });
 
-
+// Registering function
 app.post("/register", (req, res) => {
     let registerFail = checkValidCredentials(req.body.email, req.body.username, req.body.password);  //list of reasons why register fails
     User.findOne({ email: req.body.email }, function (error, foundEmail) { //checks if there is already an existing account for that username
@@ -130,8 +129,8 @@ app.post("/register", (req, res) => {
                                 });
                             }
                         });
-                    } else { //if there was an invalid field or error, set status to 406 and reload register with registerFail contents
-                        res.status(406).render("register", { registerFail: registerFail });
+                    } else { //if there was an invalid field or error, set status to notAcceptable and reload register with registerFail contents
+                        res.status(notAcceptable).render("register", { registerFail: registerFail });
                     }
                 }
             });
@@ -139,8 +138,7 @@ app.post("/register", (req, res) => {
     });
 });
 
-
-// Login Pages
+// Login pages
 app.get('/login', (req, res) => {
     if (req.session.user) { //logs in with session user (cookie) info if it exists
         if (req.session.user.isBanned) { //if user is banned,redirect to the banned page
@@ -153,7 +151,6 @@ app.get('/login', (req, res) => {
         res.render('login');
     }
 });
-
 
 // Login function
 app.post("/login", (req, res) => {
@@ -187,8 +184,7 @@ app.post("/login", (req, res) => {
     });
 });
 
-
-// Home Page
+// Home page
 app.get('/home', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -211,10 +207,7 @@ app.get('/home', (req, res) => {
     });
 });
 
-
-//Profile Pages
-
-//default profile page
+// Default profile page
 app.get('/profile', function (req, res) { //goes to the profile page of the session user
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -222,8 +215,7 @@ app.get('/profile', function (req, res) { //goes to the profile page of the sess
 
 });
 
-
-//loads the profile of any user on the site
+// Profile page of specified user
 app.get('/profile/:profile', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -242,7 +234,7 @@ app.get('/profile/:profile', (req, res) => {
         User.findOne({ username: username }, function (findUsererror, foundUser) { //find the user in the DB
             if (findUsererror) return handleError(findUsererror, res, req.session.user); //check for error from query
             if (foundUser == null) { //if the user does not exist, then redirect to error page
-                res.redirect('../error');
+                res.status(badRequest).render('error', { user: req.session.user });
             }
             Post.find({ author: username, isVisible: true }).sort({ date: -1 }).exec(function (findPostError, foundPosts) { //if the user is found, then find all their posts
                 if (findPostError) return handleError(findPostError, res, req.session.user); //check for error from query
@@ -264,8 +256,7 @@ app.get('/profile/:profile', (req, res) => {
     }
 });
 
-
-// Announcements Page
+// Announcements page
 app.get('/announcements', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -287,8 +278,7 @@ app.get('/announcements', (req, res) => {
     });
 });
 
-
-// Explore Page
+// Explore page
 app.get("/explore", (req, res) => { //loads the explore page
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -298,8 +288,7 @@ app.get("/explore", (req, res) => { //loads the explore page
     });
 });
 
-
-// Popular Page
+// Popular page
 app.get('/popular', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -322,22 +311,21 @@ app.get('/popular', (req, res) => {
     });
 });
 
-
 // Logout
 app.get('/logout', (req, res) => {
     req.session.reset(); //reset session info
     res.redirect('/login'); //redirect to login
 });
 
-
 // Profile Interactions
+// Change profile picture page
 app.get('/changePic', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     res.render('changePic', { user: req.session.user, invalidURL: false }); //render change pic page
 });
 
-
+// Change profile picture function
 app.post("/changePic", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -354,14 +342,14 @@ app.post("/changePic", (req, res) => {
     }
 });
 
-
+// Change profile bio page
 app.get('/editBio', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     res.render('editBio', { user: req.session.user }); //render edit bio page
 });
 
-
+// Change profile bio function
 app.post("/editBio", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -374,14 +362,14 @@ app.post("/editBio", (req, res) => {
     });
 });
 
-
+// Change edit interests page
 app.get('/editInterests', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     res.render('editInterests', { user: req.session.user }); //render edit interest page
 });
 
-
+// Change edit interests function
 app.get("/delete/userint/:interest", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -399,7 +387,7 @@ app.get("/delete/userint/:interest", (req, res) => {
     }));
 });
 
-
+// Followers of specified user page
 app.get('/followers/:username', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -410,7 +398,7 @@ app.get('/followers/:username', (req, res) => {
     });
 });
 
-
+// Following of specified user page
 app.get('/following/:username', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -421,8 +409,8 @@ app.get('/following/:username', (req, res) => {
     });
 });
 
-
 // User Interactions
+// Follow specified user
 app.get("/follow/username/:username", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -453,7 +441,7 @@ app.get("/follow/username/:username", (req, res) => {
     });
 });
 
-
+// Unfollow specified user
 app.get("/unfollow/username/:username", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -484,13 +472,13 @@ app.get("/unfollow/username/:username", (req, res) => {
     });
 });
 
-
+// Make post function
 app.post("/makePost", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     if (req.body.interest == "Other") { //check if interest of the post is "Other"
         if (req.body.addInterest.length == 0) {
-            res.redirect('error');
+            res.status(badRequest).render('error', { user: req.session.user });
         } else {
             const newPost = new Post({
                 author: req.body.username,
@@ -538,7 +526,7 @@ app.post("/makePost", (req, res) => {
                         });
                     });
                 } else {
-                    res.redirect('error');
+                    res.status(badRequest).render('error', { user: req.session.user });
                 }
             });
         }
@@ -568,20 +556,20 @@ app.post("/makePost", (req, res) => {
                     });
                 });
             } else {
-                res.redirect('error');
+                res.status(badRequest).render('error', { user: req.session.user });
             }
         });
     }
 });
 
-
+// Make announcement function
 app.post("/makeAnnouncement", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     if (req.session.user.isAdmin) { //check if user is the admin
         if (req.body.interest == "Other") { //if the interest category is other
             if (req.body.addInterest.length == 0) {
-                res.redirect('error');
+                res.status(badRequest).render('error', { user: req.session.user });
             } else {
                 const newPost = new Post({ //create a new announcement for this interest
                     author: req.body.username,
@@ -622,7 +610,7 @@ app.post("/makeAnnouncement", (req, res) => {
                             });
                         });
                     } else {
-                        res.redirect('error');
+                        res.status(badRequest).render('error', { user: req.session.user });
                     }
                 });
             }
@@ -652,17 +640,16 @@ app.post("/makeAnnouncement", (req, res) => {
                         });
                     });
                 } else {
-                    res.redirect('error');
+                    res.status(badRequest).render('error', { user: req.session.user });
                 }
             });
         }
     } else {
-        res.redirect('error');
+        res.status(forbidden).render('error', { user: req.session.user });
     }
 });
 
-
-// Interest Page
+// Interest page
 app.get('/interest/:interest', (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -679,7 +666,7 @@ app.get('/interest/:interest', (req, res) => {
     });
 });
 
-
+// Search posts function
 app.post("/searchPost", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -689,7 +676,7 @@ app.post("/searchPost", (req, res) => {
     });
 });
 
-
+// View post page
 app.get("/viewPost/postId/:postId", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -702,14 +689,14 @@ app.get("/viewPost/postId/:postId", (req, res) => {
     });
 });
 
-
+// Like specified post
 app.get("/like/postId/:postId", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     const user = req.session.user.username;
     const postId = req.params.postId;
     if (!mongoose.Types.ObjectId.isValid(postId)) { //check ID of given post is valid
-        res.status(400).render('error', { user: req.session.user });
+        res.status(badRequest).render('error', { user: req.session.user });
     } else {
         Post.findOne({ _id: mongoose.Types.ObjectId(postId) }, (function (findPostError, foundPost) { //find post with given ID in DB
             if (findPostError) return handleError(findPostError, res, req.session.user); //check for error from query
@@ -727,14 +714,14 @@ app.get("/like/postId/:postId", (req, res) => {
     }
 });
 
-
+// Unlike specified post
 app.get("/unlike/postId/:postId", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     const user = req.session.user.username;
     const postId = req.params.postId;
     if (!mongoose.Types.ObjectId.isValid(postId)) { //check ID of given post is valid
-        res.status(400).render('error', { user: req.session.user });
+        res.status(badRequest).render('error', { user: req.session.user });
     } else {
         Post.findOne({ _id: mongoose.Types.ObjectId(postId) }, (function (findPostError, foundPost) { //find post with given ID in DB
             if (findPostError) return handleError(findPostError, res, req.session.user); //check for error from query
@@ -749,14 +736,14 @@ app.get("/unlike/postId/:postId", (req, res) => {
     }
 });
 
-
+// Dislike specified post
 app.get("/dislike/postId/:postId", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     const user = req.session.user.username;
     const postId = req.params.postId;
     if (!mongoose.Types.ObjectId.isValid(postId)) { //check ID of given post is valid
-        res.status(400).render('error', { user: req.session.user });
+        res.status(badRequest).render('error', { user: req.session.user });
     } else {
         Post.findOne({ _id: mongoose.Types.ObjectId(postId) }, (function (findPostError, foundPost) { //find post with given ID in DB
             if (findPostError) return handleError(findPostError, res, req.session.user); //check for error from query
@@ -774,14 +761,14 @@ app.get("/dislike/postId/:postId", (req, res) => {
     }
 });
 
-
+// Undislike specified post
 app.get("/undislike/postId/:postId", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     const user = req.session.user.username;
     const postId = req.params.postId;
     if (!mongoose.Types.ObjectId.isValid(postId)) { //check ID of given post is valid
-        res.status(400).render('error', { user: req.session.user });
+        res.status(badRequest).render('error', { user: req.session.user });
     } else {
         Post.findOne({ _id: mongoose.Types.ObjectId(postId) }, (function (findPostError, foundPost) { //find post with given ID in DB
             if (findPostError) return handleError(findPostError, res, req.session.user); //check for error from query
@@ -796,7 +783,7 @@ app.get("/undislike/postId/:postId", (req, res) => {
     }
 });
 
-
+// Make commment on specified post function
 app.post("/makeComment", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -824,7 +811,7 @@ app.post("/makeComment", (req, res) => {
     });
 });
 
-
+// Delete specified post
 app.get("/delete/postId/:postId", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -842,13 +829,13 @@ app.get("/delete/postId/:postId", (req, res) => {
     });
 });
 
-
+// Report specified post
 app.get("/report/postId/:postId", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
     const postId = req.params.postId; //post id in params
     if (!mongoose.Types.ObjectId.isValid(postId)) {
-        res.status(400).render('error', { user: req.session.user });
+        res.status(badRequest).render('error', { user: req.session.user });
     } else {
         Post.findOne({ _id: mongoose.Types.ObjectId(postId) }, (function (findPostError, reportPost) { //find reported post
             if (findPostError) return handleError(findPostError, res, req.session.user); //check for error from query
@@ -861,23 +848,8 @@ app.get("/report/postId/:postId", (req, res) => {
     }
 });
 
-
-app.get("/ignore/postId/:postId", (req, res) => {
-    const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
-    if (responded) return;
-    const postId = req.params.postId;
-    Post.findOne({ _id: mongoose.Types.ObjectId(postId) }, (function (findPostError, reportPost) {//find post 
-        if (findPostError) return handleError(findPostError, res, req.session.user); //check for error from query
-        reportPost.isReported = false; //set reported to false
-        reportPost.save(function (savePostError) {//save to database
-            if (savePostError) return handleError(savePostError, res, req.session.user); //check for error from query
-            res.redirect('back');
-        });
-    }));
-});
-
-
 // Admin Functionalities
+// View reported posts page
 app.get("/viewReportedPosts", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -891,7 +863,26 @@ app.get("/viewReportedPosts", (req, res) => {
     }
 });
 
+// Ignore specified post
+app.get("/ignore/postId/:postId", (req, res) => {
+    const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
+    if (responded) return;
+    if (req.session.user.isAdmin) { //admin check
+        const postId = req.params.postId;
+        Post.findOne({ _id: mongoose.Types.ObjectId(postId) }, (function (findPostError, reportPost) {//find post 
+            if (findPostError) return handleError(findPostError, res, req.session.user); //check for error from query
+            reportPost.isReported = false; //set reported to false
+            reportPost.save(function (savePostError) {//save to database
+                if (savePostError) return handleError(savePostError, res, req.session.user); //check for error from query
+                res.redirect('back');
+            });
+        }));
+    } else {
+        res.status(forbidden).render('error');
+    }
+});
 
+// View banned users page
 app.get("/viewBannedUsers", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -901,11 +892,11 @@ app.get("/viewBannedUsers", (req, res) => {
             res.render('bannedUsers', { user: req.session.user, users: foundUsers }); //render bannedUsers page
         });
     } else {
-        res.redirect('error');
+        res.status(forbidden).render('error', { user: req.session.user });
     }
 });
 
-
+// Ban specified user
 app.get("/ban/username/:username", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -934,7 +925,7 @@ app.get("/ban/username/:username", (req, res) => {
     }
 });
 
-
+// Unban sppecified user
 app.get("/unban/username/:username", (req, res) => { //unbans user
     if (req.session.user.isAdmin) {
         const username = req.params.username;
@@ -960,7 +951,7 @@ app.get("/unban/username/:username", (req, res) => { //unbans user
     }
 });
 
-
+// View interest submissions page
 app.get("/viewInterestSubmissions", (req, res) => { //views all submissions for new interests
     Interest.find({ approved: false }, function (findInterestError, foundTags) {  //views all interests that are not approved
         if (findInterestError) return handleError(findInterestError, res, req.session.user); //check for error from query
@@ -968,7 +959,7 @@ app.get("/viewInterestSubmissions", (req, res) => { //views all submissions for 
     });
 });
 
-
+// Approve specified interest
 app.get("/approve/tag/:id", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -978,11 +969,11 @@ app.get("/approve/tag/:id", (req, res) => {
             res.redirect('back');
         });
     } else {
-        res.redirect('error');
+        res.status(forbidden).render('error', { user: req.session.user });
     }
 });
 
-
+// Reject specified interest
 app.get("/reject/tag/:id", (req, res) => {
     const responded = checkUserStatus(req.session.user, res); // checks that the user is logged in and not banned
     if (responded) return;
@@ -992,11 +983,11 @@ app.get("/reject/tag/:id", (req, res) => {
             res.redirect('back');
         }));
     } else {
-        res.redirect('error');
+        res.status(forbidden).render('error', { user: req.session.user });
     }
 });
 
-
+// Catch invalid URLS
 app.all("*", (req, res) => {
     if (req.session.user) { //make sure session user exists
         if (req.session.user.isBanned) { //if banned, render banned page
@@ -1005,13 +996,12 @@ app.all("*", (req, res) => {
             res.render('error', { user: req.session.user });
         }
     } else {
-        res.status(404).render('error');
+        res.status(notFound).render('error');
     }
 });
 
 
 // Helper Functions
-
 // Checks if a user is logged in or banned
 function checkUserStatus(user, res) {
     if (user) { //if session user exists
@@ -1026,8 +1016,8 @@ function checkUserStatus(user, res) {
     return false;
 }
 
-// Handle errors
-function handleError(error, res, errorUser, errorStatus = internalServerError, location = null) {
+// Handles errors
+function handleError(error, res, errorUser, errorStatus = internalServerError) {
     console.log(error);
     res.status(errorStatus).render('error', { user: errorUser });
 }
@@ -1059,7 +1049,6 @@ function sortPopular(posts, start, end) {
         for (let j = start; j < end; j++) { //iterate from the start to the end
             if ((posts[j].likes.length - posts[j].dislikes.length) >= pivot) { //if karma is greater than or equal to the pivot value, swap with posts at i and increment
                 i++;
-
                 swapTemp = posts[i];
                 posts[i] = posts[j];
                 posts[j] = swapTemp;
@@ -1075,5 +1064,5 @@ function sortPopular(posts, start, end) {
 }
 
 
-// Run Site
+// Export modules of site
 module.exports = { app: app, mongoose: mongoose, User: User, Post: Post, Interest: Interest };

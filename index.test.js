@@ -7,8 +7,6 @@ const User = index.User;
 const Post = index.Post;
 const Interest = index.Interest;
 
-// /like/postId/607c7801f13d0f9d4c5d23b2
-
 beforeAll(async (done) => {
     await User.deleteOne({ email: 'jestEmail@gmail.com', username: 'jestUsername' })
     await Post.findOne({ text: 'Test post for likes and dislikes' }, (function (error, foundPost) {
@@ -512,8 +510,7 @@ describe('T04', () => {
         var req = request.get('/profile/user234234')
         req.cookies = this.Cookies;
         await req
-            .expect(302)
-            .expect('Location', /error/)
+            .expect(400)
         done()
     })
 
@@ -838,32 +835,6 @@ describe('User session', () => {
         done()
     })
 
-    // it('Register new user', async(done) => {
-    //   await request.post('/register')
-    //   .type('form')
-    //   .send({
-    //       email: "jest@gmail.com",
-    //       username: "jest",
-    //       password: "jesttest"
-    //   })
-    //   .expect(302)
-    //   .expect('Location', /home/)
-    //   .then ((response) => {
-    //     this.Cookies = response.headers['set-cookie'].pop().split(';')[0];
-    //   })
-    //   done()
-    // })
-
-    // it('Automatic login from landing page', async(done) => {
-    //   await request.get('/');
-    //   var req = request.get('/login')
-    //   req.cookies = this.Cookies;
-    //   await req
-    //   .expect(302)
-    //   .expect('Location', /home/)
-    //   done()
-    // })
-
     it('Log out', async (done) => {
         await request.get('/logout')
             .expect(302)
@@ -891,9 +862,6 @@ describe('User session', () => {
         req.cookies = this.Cookies;
         await req
             .expect(200)
-        // .then ((response) => {
-        //   response.text.should.match(/"\/profile\/jest">Profile/);
-        // })
         done()
     })
 
@@ -902,9 +870,6 @@ describe('User session', () => {
         req.cookies = this.Cookies;
         await req
             .expect(200)
-        // .then ((response) => {
-        //   response.text.should.match(/We will be banning all users who are not cool/);
-        // })
         done()
     })
 
@@ -913,9 +878,6 @@ describe('User session', () => {
         req.cookies = this.Cookies;
         await req
             .expect(200)
-        // .then ((response) => {
-        //   response.text.should.match(/"\/profile\/jest">Profile/);
-        // })
         done()
     })
 
@@ -924,9 +886,6 @@ describe('User session', () => {
         req.cookies = this.Cookies;
         await req
             .expect(200)
-        // .then ((response) => {
-        //   response.text.should.match(/"\/profile\/jest">Profile/);
-        // })
         done()
     })
 
@@ -1005,29 +964,6 @@ describe('User session', () => {
         done()
     })
 
-    //   it('Make post', async(done) => {
-    //     var req = request.post('/makePost')
-    //     req.cookies = this.Cookies;
-    //     await req
-    //     .type('form')
-    //     .send({
-    //         username: "jest",
-    //         postContent: "Testing a new posts on this site",
-    //         interest: "Soccer",
-    //         addInterest: "testing"
-    //     })
-    //     .expect(302)
-    //     .expect('Location', /profile/)
-    //     done()
-    //   })
-
-    //   it('Check for post', async(done) => {
-    //     Post.findOne({author: "jest", text: "Testing a new posts on this site", interest: "Soccer"} , function(error, foundPost) {
-    //       expect(foundPost).not.toBeNull();
-    //       done()
-    //     })
-    //   })
-
     it('page does not exist', async (done) => {
         await request.get('/sdgdsfgdsfgdsf')
             .expect(404)
@@ -1041,10 +977,6 @@ describe('User session', () => {
             .expect(200)
         done()
     })
-
-    
-
-    
 
 })
 
