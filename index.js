@@ -493,8 +493,8 @@ app.post("/makePost", (req, res) => {
             User.findOne({ username: req.session.user.username }, function (findUserError, foundUser) {
                 if (findUserError) return handleError(findUserError, res, req.session.user); //check for error from query
                 if (foundUser) {
-                    if (!foundUser.interests.includes[req.body.addinterest]) {
-                        foundUser.interests.push(req.body.addinterest);
+                    if (!foundUser.interests.includes[req.body.addInterest]) {
+                        foundUser.interests.push(req.body.addInterest);
                     }
                     foundUser.save(function (saveUserError) {
                         if (saveUserError) return handleError(saveUserError, res, req.session.user); //check for error from query
