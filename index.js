@@ -21,7 +21,8 @@ app.use(session({           //setting up client session
 
 
 // Set up environment for and connect to MongoDB Sever
-mongoose.connect('mongodb+srv://snpAdmin:s&pCoders@wsm.cuhkw.mongodb.net/test', { useNewUrlParser: true, useUnifiedTopology: true });
+require("./mongo").db
+mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const userSchema = { //schema in MongoDB for user
     username: String,   //username 

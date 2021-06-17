@@ -1,0 +1,1 @@
+db = 'mongodb+srv://your_login:your_pwd@your_host/your_db'
